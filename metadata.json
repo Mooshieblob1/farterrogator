@@ -1,0 +1,5 @@
+{
+  "name": "Farterrogator",
+  "description": "An AI-powered tool that interrogates images to generate natural language prompts and strict Danbooru-style tags with adjustable relevance tolerance.",
+  "requestFramePermissions": []
+}

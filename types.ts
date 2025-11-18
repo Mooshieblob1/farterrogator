@@ -1,0 +1,41 @@
+
+export type TagCategory = 'general' | 'character' | 'style' | 'technical' | 'rating';
+
+export type BackendType = 'gemini' | 'local_hybrid';
+
+export interface Tag {
+  name: string;
+  score: number;
+  category: TagCategory;
+}
+
+export interface InterrogationResult {
+  naturalDescription?: string;
+  tags: Tag[];
+}
+
+export interface BackendConfig {
+  type: BackendType;
+  
+  // Gemini Specifics
+  geminiApiKey: string;
+
+  // Local Hybrid Specifics (Ollama + Local Tagger)
+  ollamaEndpoint: string;
+  ollamaModel: string; // e.g., 'qwen2.5-vl'
+  taggerEndpoint: string; // e.g., 'http://localhost:8000/tag'
+}
+
+export interface TaggingSettings {
+  thresholds: Record<TagCategory, number>;
+  topK: number;
+  randomize: boolean;
+  removeUnderscores: boolean;
+}
+
+export enum AppState {
+  IDLE = 'IDLE',
+  ANALYZING = 'ANALYZING',
+  SUCCESS = 'SUCCESS',
+  ERROR = 'ERROR'
+}
