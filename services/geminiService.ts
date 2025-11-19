@@ -248,8 +248,28 @@ export const fetchOllamaModels = async (endpoint: string): Promise<string[]> => 
       throw new Error(`Failed to fetch models: ${response.statusText} (${response.status})`);
     }
     const data = await response.json();
-    // Ollama returns { models: [{ name: "qwen:vl", ... }] }
-    return data.models?.map((m: any) => m.name) || [];
+    
+    // Filter for Vision Models only
+    // Based on known vision model families and keywords
+    const visionKeywords = [
+      'vl', 'vision', 'llava', 'moondream', 'minicpm-v', 'gemma3', 
+      'llama3.2-vision', 'llama4', 'mistral-small', 'granite3.2-vision', 'bakllava'
+    ];
+
+    const models = data.models || [];
+    const visionModels = models.filter((m: any) => {
+      const name = m.name.toLowerCase();
+      // Check name against keywords
+      const isVisionName = visionKeywords.some(k => name.includes(k));
+      
+      // Check details if available (some models might declare family)
+      const family = m.details?.family?.toLowerCase() || '';
+      const isVisionFamily = family.includes('llava') || family.includes('clip');
+
+      return isVisionName || isVisionFamily;
+    });
+
+    return visionModels.map((m: any) => m.name);
   } catch (error: any) {
     console.error("Fetch Ollama Models Error:", error);
 
@@ -369,6 +389,7 @@ const fetchOllamaTagsAndSummary = async (
     1. Verify these tags visually.
     2. Add any missing tags that are visually apparent.
     3. Write a detailed natural language description (summary) of the image, incorporating the visual elements described by the tags.
+    4. IMPORTANT: Your description MUST explicitly mention the key elements identified in the tags (e.g. character names, series, specific clothing).
     
     Format your response exactly as:
     Tags: tag1, tag2, ...
@@ -497,24 +518,29 @@ const enrichTagsWithCopyrights = async (
 
   // 1. Regex Extraction
   for (const tag of currentTags) {
-    if (tag.category === 'character') {
-      const match = tag.name.match(/.*\((.*?)\)/);
-      if (match) {
-        const seriesName = normalizeTag(match[1]);
-        // Check if this series name is a valid copyright tag
-        if (isTagInCategory(seriesName, 'copyright') && !existingNames.has(seriesName)) {
-          newTags.push({
-            name: seriesName,
-            score: tag.score, // Inherit score from character
-            category: 'copyright',
-            source: tag.source
-          });
-          existingNames.add(seriesName);
-        }
-      } else {
-        // No parenthesis, candidate for Ollama lookup
+    // Check ALL tags for parenthetical series info, not just characters
+    // e.g. excalibur_(fate/stay_night) might be 'general' or 'item'
+    const match = tag.name.match(/.*\((.*?)\)/);
+    if (match) {
+      const seriesName = normalizeTag(match[1]);
+      // Check if this series name is a valid copyright tag
+      if (isTagInCategory(seriesName, 'copyright') && !existingNames.has(seriesName)) {
+        newTags.push({
+          name: seriesName,
+          score: tag.score, // Inherit score
+          category: 'copyright',
+          source: tag.source
+        });
+        existingNames.add(seriesName);
+      } else if (!existingNames.has(seriesName)) {
+        // If regex found something but it's not a known tag (e.g. 'fate'), 
+        // add the ORIGINAL tag to lookup list so Ollama can resolve it.
+        // e.g. 'artoria_pendragon_(fate)' -> Ollama knows this is Fate/Grand Order
         charactersNeedingLookup.push(tag.name);
       }
+    } else if (tag.category === 'character') {
+      // No parenthesis, but it's a character, so look it up
+      charactersNeedingLookup.push(tag.name);
     }
   }
 
@@ -544,9 +570,17 @@ const generateTagsLocalHybrid = async (base64Image: string, config: BackendConfi
     console.error("Local Tagger Failed:", e);
   }
 
+  // Enrich Local Tags with Copyrights BEFORE sending to Ollama
+  // This ensures Ollama knows the series context (e.g. Fate) when generating the description
+  try {
+    localTags = await enrichTagsWithCopyrights(localTags, config);
+  } catch (e) {
+    console.error("Copyright Enrichment Failed:", e);
+  }
+
   let ollamaData: { tags: Tag[], summary: string | undefined } = { tags: [], summary: undefined };
   try {
-    // Pass local tags to Ollama for better context
+    // Pass enriched local tags to Ollama for better context
     ollamaData = await fetchOllamaTagsAndSummary(base64Image, config, localTags);
   } catch (e) {
     console.error("Ollama Failed:", e);
@@ -554,10 +588,7 @@ const generateTagsLocalHybrid = async (base64Image: string, config: BackendConfi
 
   // Merging Strategy
   let combinedTags = mergeTags(localTags, ollamaData.tags);
-
-  // Enrich with Copyrights (Regex + Ollama Fallback)
-  combinedTags = await enrichTagsWithCopyrights(combinedTags, config);
-
+  
   return {
     tags: combinedTags,
     naturalDescription: ollamaData.summary
