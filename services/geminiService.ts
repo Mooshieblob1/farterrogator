@@ -312,7 +312,8 @@ interface TagState {
 }
 
 const normalizeTag = (tag: string): string => {
-  return tag.toLowerCase().trim().replace(/_/g, ' ');
+  // Ensure tags match Danbooru format (lowercase, underscores) for CSV lookup
+  return tag.toLowerCase().trim().replace(/ /g, '_');
 };
 
 const mergeTags = (localTags: Tag[], ollamaTags: Tag[]): Tag[] => {
@@ -519,7 +520,10 @@ const enrichTagsWithCopyrights = async (
 
   // 2. Ollama Fallback
   if (charactersNeedingLookup.length > 0 && config.ollamaEndpoint) {
+    console.log(`[Copyright Lookup] Querying Ollama for characters: ${charactersNeedingLookup.join(', ')}`);
     const ollamaCopyrights = await fetchOllamaCopyrights(charactersNeedingLookup, config);
+    console.log(`[Copyright Lookup] Found copyrights: ${ollamaCopyrights.map(t => t.name).join(', ')}`);
+    
     for (const tag of ollamaCopyrights) {
       if (!existingNames.has(tag.name)) {
         newTags.push(tag);
