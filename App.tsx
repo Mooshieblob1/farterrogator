@@ -31,7 +31,7 @@ const App: React.FC = () => {
     type: 'local_hybrid',
     geminiApiKey: '',
     ollamaEndpoint: 'https://ollama.gpu.garden',
-    ollamaModel: 'qwen3-vl',
+    ollamaModel: 'qwen3-vl:30b',
     taggerEndpoint: 'https://localtagger.gpu.garden/interrogate',
     enableNaturalLanguage: true
   });

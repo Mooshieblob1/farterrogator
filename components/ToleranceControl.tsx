@@ -40,9 +40,18 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
     try {
       const models = await fetchOllamaModels(backendConfig.ollamaEndpoint);
       setAvailableModels(models);
-      // If current model is not in list and list is not empty, select first one
+      
+      // Smart selection logic
       if (models.length > 0 && !models.includes(backendConfig.ollamaModel)) {
-        onBackendChange({ ...backendConfig, ollamaModel: models[0] });
+        // 1. Try to find a model that contains the current config name (e.g. 'qwen3-vl' -> 'qwen3-vl:30b')
+        const partialMatch = models.find(m => m.includes(backendConfig.ollamaModel) || backendConfig.ollamaModel.includes(m));
+        
+        if (partialMatch) {
+           onBackendChange({ ...backendConfig, ollamaModel: partialMatch });
+        } else {
+           // 2. Fallback to first available
+           onBackendChange({ ...backendConfig, ollamaModel: models[0] });
+        }
       }
     } catch (e) {
       console.error("Failed to load models", e);

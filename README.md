@@ -71,7 +71,7 @@ You need a backend that serves a tagging model. This project is configured to wo
 ### 2. Ollama (LLM & Vision)
 Install [Ollama](https://ollama.com/) for the natural language descriptions.
 - **Endpoint**: `http://localhost:11434`
-- **Recommended Model**: `qwen2.5-vl` (Vision-Language model) or `llava`.
+- **Recommended Model**: `qwen3-vl:30b` (Vision-Language model) or `llava`.
 
 #### ⚠️ Important: CORS Configuration
 If you are accessing Ollama from a different domain (e.g., your web app is on `tagger.gpu.garden` and Ollama is on `ollama.gpu.garden`), you **must** configure Ollama to allow Cross-Origin requests.
