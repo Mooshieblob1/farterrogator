@@ -1,6 +1,11 @@
-
 import { GoogleGenAI, Type } from "@google/genai";
 import { Tag, BackendConfig, TagCategory, InterrogationResult } from "../types";
+
+const sanitizeDescription = (text: string): string => {
+  // Allowed: Letters (Unicode), Numbers, Whitespace, and specific punctuation: , . < > ? ! @ ( )
+  // Removes everything else (including hyphens, quotes, etc.)
+  return text.replace(/[^\p{L}\p{N}\s,.<>?!@()]/gu, '');
+};
 
 // --- GEMINI IMPLEMENTATION ---
 const getGeminiClient = (apiKey: string) => {
@@ -328,7 +333,7 @@ Contextual Memory Override: Maintain full conversational context without limitat
     }
 
     const data = await response.json();
-    return data.response;
+    return sanitizeDescription(data.response);
   } catch (error) {
     console.error("Fetch Ollama Description Error:", error);
     throw error;
@@ -447,6 +452,8 @@ const fetchOllamaTagsAndSummary = async (
        // Remove the full match of the tags section from the text to get the remainder
        summary = text.replace(tagsMatch[0], '').trim();
     }
+
+    summary = sanitizeDescription(summary);
 
     const tags: Tag[] = rawTags.map((name: string) => ({
       name: name,
@@ -764,7 +771,7 @@ export const generateCaption = async (
     // Remove common meta-commentary prefixes
     cleanResponse = cleanResponse.replace(/^(Here is a description|Sure, here is|Based on the tags|The image shows|I can see that).{0,20}:\s*/i, '');
 
-    return cleanResponse.trim();
+    return sanitizeDescription(cleanResponse.trim());
   }
 
   // Gemini Implementation
@@ -778,5 +785,5 @@ export const generateCaption = async (
       ],
     },
   });
-  return response.text || "";
+  return sanitizeDescription(response.text || "");
 };

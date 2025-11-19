@@ -141,11 +141,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
 
   if (selectedImage && previewUrl) {
     return (
-      <div className="relative group w-full h-full min-h-[300px] bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden flex items-center justify-center transition-colors duration-300">
+      <div className="relative group w-fit mx-auto bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors duration-300">
         <img 
           src={previewUrl} 
           alt="Preview" 
-          className="max-w-full max-h-[600px] object-contain"
+          className="max-w-full max-h-[600px] w-auto h-auto block"
         />
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
         <button 
