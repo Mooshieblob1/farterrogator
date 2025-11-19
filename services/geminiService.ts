@@ -141,7 +141,17 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig)
     endpoint = endpoint.replace(/\/$/, '') + '/interrogate';
   }
 
-  if (import.meta.env.DEV && endpoint.includes('localtagger.gpu.garden')) {
+  // Force HTTPS for remote endpoints to prevent Mixed Content errors
+  if (endpoint.includes('gpu.garden') && endpoint.startsWith('http:')) {
+    endpoint = endpoint.replace('http:', 'https:');
+  }
+
+  // Automatic Proxy Handling:
+  // 1. DEV mode
+  // 2. PROD mode BUT running locally (e.g., vite preview)
+  const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+  if ((import.meta.env.DEV || isLocalhost) && endpoint.includes('localtagger.gpu.garden')) {
     // Remove protocol and domain to get the relative path
     let path = endpoint.replace(/^https?:\/\//, '').replace(/^localtagger\.gpu\.garden/, '');
 
