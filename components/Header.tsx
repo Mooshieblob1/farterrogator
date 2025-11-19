@@ -41,6 +41,15 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme, backendConfig }
           </div>
         </div>
         <div className="flex items-center gap-4">
+          <a
+            href="https://gpu.garden"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            title="GPU Garden"
+          >
+            <img src="https://gpu.garden/favicon.png" alt="GPU Garden" className="w-5 h-5" />
+          </a>
           <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
             <Sparkles className="w-3 h-3 text-red-500 dark:text-red-400" />
             <span className="text-xs text-slate-600 dark:text-slate-400">Powered by {modelDisplay}</span>
