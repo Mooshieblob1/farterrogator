@@ -12,7 +12,7 @@ const getGeminiClient = (apiKey: string) => {
 
 const generateTagsGemini = async (base64Image: string, mimeType: string, config: BackendConfig): Promise<InterrogationResult> => {
   const ai = getGeminiClient(config.geminiApiKey);
-  
+
   const responseSchema = {
     type: Type.OBJECT,
     properties: {
@@ -24,7 +24,7 @@ const generateTagsGemini = async (base64Image: string, mimeType: string, config:
           properties: {
             name: { type: Type.STRING },
             score: { type: Type.NUMBER },
-            category: { 
+            category: {
               type: Type.STRING,
               enum: ['general', 'character', 'style', 'technical', 'rating']
             }
@@ -64,86 +64,125 @@ const generateTagsGemini = async (base64Image: string, mimeType: string, config:
 
 // --- LOCAL HYBRID IMPLEMENTATION ---
 // Orchestrates: Local Tagger -> Ollama (Clean/Categorize + Caption)
-const generateTagsLocalHybrid = async (base64Image: string, config: BackendConfig): Promise<InterrogationResult> => {
-  // Validate endpoints
-  if (!config.ollamaEndpoint || config.ollamaEndpoint.trim() === '') {
-    throw new Error("Ollama endpoint is invalid or missing.");
-  }
+// --- LOCAL HYBRID IMPLEMENTATION ---
+
+export const fetchLocalTags = async (base64Image: string, config: BackendConfig): Promise<Tag[]> => {
   if (!config.taggerEndpoint || config.taggerEndpoint.trim() === '') {
     throw new Error("Local Tagger endpoint is invalid or missing.");
   }
 
+  // Convert base64 to blob for FormData
+  const byteCharacters = atob(base64Image);
+  const byteNumbers = new Array(byteCharacters.length);
+  for (let i = 0; i < byteCharacters.length; i++) {
+    byteNumbers[i] = byteCharacters.charCodeAt(i);
+  }
+  const byteArray = new Uint8Array(byteNumbers);
+  const blob = new Blob([byteArray], { type: 'image/png' }); // Type doesn't strictly matter for the backend usually, but good practice
+
+  const formData = new FormData();
+  formData.append('file', blob, 'image.png');
+
   try {
-    // Step 1: Get Raw Tags from Local Tagger (e.g., WD1.4)
-    // We assume the local tagger accepts a base64 image and returns a simple list of tags or a map
-    let rawTags: string[] = [];
-    try {
-      const taggerResponse = await fetch(config.taggerEndpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: base64Image })
-      });
-      
-      if (taggerResponse.ok) {
-        const taggerData = await taggerResponse.json();
-        // Assume taggerData is { tags: { "1girl": 0.99, "blue_hair": 0.8 ... } } or { tags: ["1girl", ...] }
-        if (Array.isArray(taggerData.tags)) {
-            rawTags = taggerData.tags;
-        } else if (typeof taggerData.tags === 'object') {
-            rawTags = Object.keys(taggerData.tags);
-        }
-      } else {
-        console.warn("Local tagger failed, proceeding with Ollama vision-only.");
-      }
-    } catch (e) {
-      console.warn("Could not connect to local tagger, proceeding with Ollama vision-only.", e);
+    const response = await fetch(`${config.taggerEndpoint}?threshold=0.35`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Local Tagger Error: ${response.statusText}`);
     }
 
-    // Step 2: Send Image + Raw Tags to Ollama for Logic/Formatting/Captioning
-    const prompt = `
-      Analyze this image.
-      ${rawTags.length > 0 ? `I have already run a basic tagger which found these potential tags: ${rawTags.join(', ')}.` : ''}
-      
-      YOUR TASKS:
-      1. Verify the raw tags and add any missing details (hair style, clothes, background).
-      2. Categorize all tags strictly (General, Character, Style, Technical, Rating).
-      3. Generate a detailed Natural Language prompt describing the image.
-      
-      Return strictly valid JSON:
-      {
-        "tags": [{"name": "tag_name", "score": 0.9, "category": "general"}],
-        "naturalDescription": "A full sentence description..."
-      }
-      
-      ${getInterrogationPrompt()}
-    `;
+    const data = await response.json();
+    // Expected format: { tags: { "1girl": 0.99, ... }, tag_string: "..." }
 
-    const ollamaResponse = await fetch(`${config.ollamaEndpoint}/api/generate`, {
+    const tags: Tag[] = [];
+    if (data.tags && typeof data.tags === 'object') {
+      Object.entries(data.tags).forEach(([name, score]) => {
+        tags.push({
+          name,
+          score: Number(score),
+          category: 'general' // Default category, as raw tagger might not provide it
+        });
+      });
+    }
+
+    // Sort by score descending
+    return tags.sort((a, b) => b.score - a.score);
+  } catch (error) {
+    console.error("Fetch Local Tags Error:", error);
+    throw error;
+  }
+};
+
+export const fetchOllamaModels = async (endpoint: string): Promise<string[]> => {
+  if (!endpoint || endpoint.trim() === '') {
+    return [];
+  }
+
+  try {
+    const response = await fetch(`${endpoint}/api/tags`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch models: ${response.statusText}`);
+    }
+    const data = await response.json();
+    // Ollama returns { models: [{ name: "qwen:vl", ... }] }
+    return data.models?.map((m: any) => m.name) || [];
+  } catch (error) {
+    console.error("Fetch Ollama Models Error:", error);
+    return [];
+  }
+};
+
+export const fetchOllamaDescription = async (base64Image: string, config: BackendConfig): Promise<string> => {
+  if (!config.ollamaEndpoint || config.ollamaEndpoint.trim() === '') {
+    throw new Error("Ollama endpoint is invalid or missing.");
+  }
+
+  try {
+    const response = await fetch(`${config.ollamaEndpoint}/api/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: config.ollamaModel,
-        prompt: prompt,
-        images: [base64Image], // Ollama expects base64 without header
-        stream: false,
-        format: "json"
+        prompt: "Describe this image in detail. Then, list 5 key themes.",
+        images: [base64Image],
+        stream: false
       })
     });
 
-    if (!ollamaResponse.ok) throw new Error(`Ollama Error: ${ollamaResponse.statusText}`);
-    
-    const data = await ollamaResponse.json();
-    const parsed = JSON.parse(data.response);
-    
-    return {
-        tags: parsed.tags || [],
-        naturalDescription: parsed.naturalDescription // Seamlessly returned
-    };
+    if (!response.ok) {
+      throw new Error(`Ollama Error: ${response.statusText}`);
+    }
 
+    const data = await response.json();
+    return data.response;
   } catch (error) {
-    console.error("Local Hybrid Error:", error);
-    throw new Error("Failed to execute Local Hybrid flow. Check console for details.");
+    console.error("Fetch Ollama Description Error:", error);
+    throw error;
   }
+};
+
+// Deprecated monolithic function, keeping for backward compatibility if needed, 
+// but the UI should now call fetchLocalTags and fetchOllamaDescription in parallel.
+const generateTagsLocalHybrid = async (base64Image: string, config: BackendConfig): Promise<InterrogationResult> => {
+  // This is now a wrapper for parallel execution
+  const [tagsResult, descriptionResult] = await Promise.allSettled([
+    fetchLocalTags(base64Image, config),
+    fetchOllamaDescription(base64Image, config)
+  ]);
+
+  const tags = tagsResult.status === 'fulfilled' ? tagsResult.value : [];
+  const description = descriptionResult.status === 'fulfilled' ? descriptionResult.value : undefined;
+
+  if (tagsResult.status === 'rejected' && descriptionResult.status === 'rejected') {
+    throw new Error("Both services failed.");
+  }
+
+  return {
+    tags,
+    naturalDescription: description
+  };
 };
 
 // --- SHARED UTILITIES ---
@@ -185,7 +224,7 @@ function getInterrogationPrompt() {
 // --- MAIN EXPORTED FUNCTIONS ---
 
 export const generateTags = async (
-  base64Image: string, 
+  base64Image: string,
   mimeType: string,
   config: BackendConfig
 ): Promise<InterrogationResult> => {
@@ -203,10 +242,10 @@ export const generateCaption = async (
   mimeType: string,
   config: BackendConfig
 ): Promise<string> => {
-  
+
   if (config.type === 'local_hybrid') {
     if (!config.ollamaEndpoint || config.ollamaEndpoint.trim() === '') {
-        throw new Error("Ollama endpoint is missing.");
+      throw new Error("Ollama endpoint is missing.");
     }
     // If calling separately for some reason, simple Ollama call
     const response = await fetch(`${config.ollamaEndpoint}/api/generate`, {

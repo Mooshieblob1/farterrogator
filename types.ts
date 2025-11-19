@@ -36,6 +36,12 @@ export interface TaggingSettings {
 export enum AppState {
   IDLE = 'IDLE',
   ANALYZING = 'ANALYZING',
+  PARTIAL_SUCCESS = 'PARTIAL_SUCCESS',
   SUCCESS = 'SUCCESS',
   ERROR = 'ERROR'
+}
+
+export interface LoadingState {
+  tags: boolean;
+  description: boolean;
 }

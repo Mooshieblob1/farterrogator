@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { Settings2, Shuffle, SortAsc, ChevronDown, ChevronUp, Layers, User, Palette, Cpu, Type, Shield, Server, Globe, Key } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Settings2, Shuffle, SortAsc, ChevronDown, ChevronUp, Layers, User, Palette, Cpu, Type, Shield, Server, Globe, Key, RefreshCw } from 'lucide-react';
 import { TaggingSettings, TagCategory, BackendConfig, BackendType } from '../types';
+import { fetchOllamaModels } from '../services/geminiService';
 
 interface ToleranceControlProps {
   settings: TaggingSettings;
@@ -10,15 +11,17 @@ interface ToleranceControlProps {
   disabled?: boolean;
 }
 
-export const ToleranceControl: React.FC<ToleranceControlProps> = ({ 
-  settings, 
-  backendConfig, 
-  onSettingsChange, 
-  onBackendChange, 
-  disabled 
+export const ToleranceControl: React.FC<ToleranceControlProps> = ({
+  settings,
+  backendConfig,
+  onSettingsChange,
+  onBackendChange,
+  disabled
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   const [activeTab, setActiveTab] = useState<'tags' | 'backend'>('tags');
+  const [availableModels, setAvailableModels] = useState<string[]>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(false);
 
   const updateThreshold = (category: TagCategory, value: number) => {
     onSettingsChange({
@@ -30,6 +33,31 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
     });
   };
 
+  const handleFetchModels = async () => {
+    if (!backendConfig.ollamaEndpoint) return;
+
+    setIsLoadingModels(true);
+    try {
+      const models = await fetchOllamaModels(backendConfig.ollamaEndpoint);
+      setAvailableModels(models);
+      // If current model is not in list and list is not empty, select first one
+      if (models.length > 0 && !models.includes(backendConfig.ollamaModel)) {
+        onBackendChange({ ...backendConfig, ollamaModel: models[0] });
+      }
+    } catch (e) {
+      console.error("Failed to load models", e);
+    } finally {
+      setIsLoadingModels(false);
+    }
+  };
+
+  // Fetch models when switching to backend tab or when endpoint changes (debounced ideally, but here on blur/effect)
+  useEffect(() => {
+    if (activeTab === 'backend' && backendConfig.type === 'local_hybrid') {
+      handleFetchModels();
+    }
+  }, [activeTab, backendConfig.type, backendConfig.ollamaEndpoint]);
+
   const categories: { id: TagCategory; label: string; icon: React.ReactNode; color: string }[] = [
     { id: 'character', label: 'Character', icon: <User className="w-3 h-3" />, color: 'text-pink-600 dark:text-pink-400' },
     { id: 'style', label: 'Style', icon: <Palette className="w-3 h-3" />, color: 'text-amber-600 dark:text-amber-400' },
@@ -40,7 +68,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
 
   return (
     <div className="bg-white dark:bg-slate-800/40 rounded-xl border border-slate-200 dark:border-slate-700 transition-colors duration-300 overflow-hidden">
-      <button 
+      <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full p-4 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
       >
@@ -50,29 +78,27 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
         </div>
         {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
       </button>
-      
+
       {isExpanded && (
         <div className="p-4 animate-in slide-in-from-top-2 duration-200">
-          
+
           {/* Tabs */}
           <div className="flex p-1 mb-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
             <button
               onClick={() => setActiveTab('tags')}
-              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                activeTab === 'tags' 
-                  ? 'bg-white dark:bg-slate-600 text-red-600 dark:text-red-300 shadow-sm' 
+              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === 'tags'
+                  ? 'bg-white dark:bg-slate-600 text-red-600 dark:text-red-300 shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
-              }`}
+                }`}
             >
               Tagging Rules
             </button>
             <button
               onClick={() => setActiveTab('backend')}
-              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${
-                activeTab === 'backend' 
-                  ? 'bg-white dark:bg-slate-600 text-red-600 dark:text-red-300 shadow-sm' 
+              className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === 'backend'
+                  ? 'bg-white dark:bg-slate-600 text-red-600 dark:text-red-300 shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
-              }`}
+                }`}
             >
               AI Backend
             </button>
@@ -83,15 +109,15 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
               {/* Output Options */}
               <div className="space-y-3">
                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Output Settings</label>
-                
+
                 <div className="flex items-center justify-between gap-4">
                   <span className="text-sm text-slate-700 dark:text-slate-300">Top K Tags</span>
                   <div className="flex items-center gap-2">
-                    <input 
-                      type="range" 
+                    <input
+                      type="range"
                       min="10" max="100" step="5"
                       value={settings.topK}
-                      onChange={(e) => onSettingsChange({...settings, topK: parseInt(e.target.value)})}
+                      onChange={(e) => onSettingsChange({ ...settings, topK: parseInt(e.target.value) })}
                       disabled={disabled}
                       className="w-24 h-1 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:bg-red-600 [&::-webkit-slider-thumb]:rounded-full"
                     />
@@ -104,8 +130,8 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                     {settings.randomize ? <Shuffle className="w-4 h-4 text-red-500" /> : <SortAsc className="w-4 h-4 text-slate-400" />}
                     <span className="text-sm text-slate-700 dark:text-slate-300">Randomize Order</span>
                   </div>
-                  <button 
-                    onClick={() => onSettingsChange({...settings, randomize: !settings.randomize})}
+                  <button
+                    onClick={() => onSettingsChange({ ...settings, randomize: !settings.randomize })}
                     disabled={disabled}
                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${settings.randomize ? 'bg-red-600' : 'bg-slate-200 dark:bg-slate-700'}`}
                   >
@@ -118,8 +144,8 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                     <Type className={`w-4 h-4 ${settings.removeUnderscores ? 'text-red-500' : 'text-slate-400'}`} />
                     <span className="text-sm text-slate-700 dark:text-slate-300">Remove Underscores</span>
                   </div>
-                  <button 
-                    onClick={() => onSettingsChange({...settings, removeUnderscores: !settings.removeUnderscores})}
+                  <button
+                    onClick={() => onSettingsChange({ ...settings, removeUnderscores: !settings.removeUnderscores })}
                     disabled={disabled}
                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${settings.removeUnderscores ? 'bg-red-600' : 'bg-slate-200 dark:bg-slate-700'}`}
                   >
@@ -135,7 +161,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider flex justify-between">
                   <span>Confidence Thresholds</span>
                 </label>
-                
+
                 <div className="space-y-4">
                   {categories.map(cat => (
                     <div key={cat.id} className="space-y-1">
@@ -169,21 +195,20 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Provider</label>
                 <div className="grid grid-cols-2 gap-2">
-                   {(['gemini', 'local_hybrid'] as BackendType[]).map((type) => (
-                     <button
-                       key={type}
-                       onClick={() => onBackendChange({...backendConfig, type})}
-                       className={`p-2 rounded-lg border text-xs font-medium flex flex-col items-center gap-1 transition-all ${
-                         backendConfig.type === type
-                           ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-500 text-red-700 dark:text-red-300'
-                           : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-red-200 dark:hover:border-red-500/50'
-                       }`}
-                     >
-                       {type === 'gemini' && <Globe className="w-4 h-4" />}
-                       {type === 'local_hybrid' && <Server className="w-4 h-4" />}
-                       {type === 'local_hybrid' ? 'Local Hybrid (Ollama + Tagger)' : 'Google Gemini'}
-                     </button>
-                   ))}
+                  {(['gemini', 'local_hybrid'] as BackendType[]).map((type) => (
+                    <button
+                      key={type}
+                      onClick={() => onBackendChange({ ...backendConfig, type })}
+                      className={`p-2 rounded-lg border text-xs font-medium flex flex-col items-center gap-1 transition-all ${backendConfig.type === type
+                          ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-500 text-red-700 dark:text-red-300'
+                          : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-red-200 dark:hover:border-red-500/50'
+                        }`}
+                    >
+                      {type === 'gemini' && <Globe className="w-4 h-4" />}
+                      {type === 'local_hybrid' && <Server className="w-4 h-4" />}
+                      {type === 'local_hybrid' ? 'Local Hybrid (Ollama + Tagger)' : 'Google Gemini'}
+                    </button>
+                  ))}
                 </div>
               </div>
 
@@ -192,10 +217,10 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                   <div className="space-y-1">
                     <label className="text-xs text-slate-500">Gemini API Key</label>
                     <div className="relative">
-                      <input 
-                        type="password" 
+                      <input
+                        type="password"
                         value={backendConfig.geminiApiKey}
-                        onChange={(e) => onBackendChange({...backendConfig, geminiApiKey: e.target.value})}
+                        onChange={(e) => onBackendChange({ ...backendConfig, geminiApiKey: e.target.value })}
                         className="w-full text-sm pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-red-500 outline-none transition-all font-mono"
                         placeholder="AIza..."
                       />
@@ -208,35 +233,61 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
 
               {backendConfig.type === 'local_hybrid' && (
                 <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-1">
-                   <div className="p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded text-[10px] text-blue-600 dark:text-blue-300 leading-tight">
-                      Seamlessly combines local tagger results with Ollama's reasoning and captioning capabilities.
-                   </div>
+                  <div className="p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded text-[10px] text-blue-600 dark:text-blue-300 leading-tight">
+                    Seamlessly combines local tagger results with Ollama's reasoning and captioning capabilities.
+                  </div>
                   <div className="space-y-1">
                     <label className="text-xs text-slate-500">Ollama Endpoint (LLM/Vision)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={backendConfig.ollamaEndpoint}
-                      onChange={(e) => onBackendChange({...backendConfig, ollamaEndpoint: e.target.value})}
+                      onChange={(e) => onBackendChange({ ...backendConfig, ollamaEndpoint: e.target.value })}
                       className="w-full text-sm px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-red-500 outline-none transition-all"
                       placeholder="http://localhost:11434"
                     />
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-slate-500">Ollama Model (e.g., qwen2.5-vl)</label>
-                    <input 
-                      type="text" 
-                      value={backendConfig.ollamaModel}
-                      onChange={(e) => onBackendChange({...backendConfig, ollamaModel: e.target.value})}
-                      className="w-full text-sm px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-red-500 outline-none transition-all"
-                      placeholder="qwen:vl"
-                    />
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs text-slate-500">Ollama Model</label>
+                      <button
+                        onClick={handleFetchModels}
+                        disabled={isLoadingModels}
+                        className="text-[10px] text-blue-500 hover:text-blue-600 flex items-center gap-1"
+                      >
+                        <RefreshCw className={`w-3 h-3 ${isLoadingModels ? 'animate-spin' : ''}`} />
+                        Refresh
+                      </button>
+                    </div>
+
+                    {availableModels.length > 0 ? (
+                      <div className="relative">
+                        <select
+                          value={backendConfig.ollamaModel}
+                          onChange={(e) => onBackendChange({ ...backendConfig, ollamaModel: e.target.value })}
+                          className="w-full text-sm px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-red-500 outline-none transition-all appearance-none"
+                        >
+                          {availableModels.map(model => (
+                            <option key={model} value={model}>{model}</option>
+                          ))}
+                        </select>
+                        <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
+                      </div>
+                    ) : (
+                      <input
+                        type="text"
+                        value={backendConfig.ollamaModel}
+                        onChange={(e) => onBackendChange({ ...backendConfig, ollamaModel: e.target.value })}
+                        className="w-full text-sm px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-red-500 outline-none transition-all"
+                        placeholder="qwen:vl (Enter manually if fetch fails)"
+                      />
+                    )}
                   </div>
                   <div className="space-y-1">
                     <label className="text-xs text-slate-500">Local Tagger Endpoint (WD1.4)</label>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={backendConfig.taggerEndpoint}
-                      onChange={(e) => onBackendChange({...backendConfig, taggerEndpoint: e.target.value})}
+                      onChange={(e) => onBackendChange({ ...backendConfig, taggerEndpoint: e.target.value })}
                       className="w-full text-sm px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-red-500 outline-none transition-all"
                       placeholder="http://localhost:8000/tag"
                     />

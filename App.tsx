@@ -4,7 +4,7 @@ import { Header } from './components/Header';
 import { ImageUpload } from './components/ImageUpload';
 import { ToleranceControl } from './components/ToleranceControl';
 import { Results } from './components/Results';
-import { generateTags, generateCaption, fileToBase64 } from './services/geminiService';
+import { generateTags, generateCaption, fileToBase64, fetchLocalTags, fetchOllamaDescription, fetchOllamaModels } from './services/geminiService';
 import { AppState, InterrogationResult, TaggingSettings, BackendConfig } from './types';
 import { useTheme } from './hooks/useTheme';
 
@@ -12,7 +12,7 @@ const App: React.FC = () => {
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [result, setResult] = useState<InterrogationResult | null>(null);
-  
+
   const [settings, setSettings] = useState<TaggingSettings>({
     thresholds: {
       character: 0.6,
@@ -76,6 +76,8 @@ const App: React.FC = () => {
     return true;
   };
 
+  const [loadingState, setLoadingState] = useState<{ tags: boolean; description: boolean }>({ tags: false, description: false });
+
   const handleInterrogate = async () => {
     if (!selectedFile) return;
 
@@ -83,33 +85,72 @@ const App: React.FC = () => {
     if (!validateBackendConfig()) return;
 
     setAppState(AppState.ANALYZING);
+    setLoadingState({ tags: true, description: true });
     setError(null);
+    setResult({ tags: [], naturalDescription: undefined }); // Reset result
 
     try {
       const base64 = await fileToBase64(selectedFile);
-      // Pass backendConfig to the service
-      const interrogationResult = await generateTags(base64, selectedFile.type, backendConfig);
-      
-      setResult(interrogationResult);
-      setAppState(AppState.SUCCESS);
+
+      if (backendConfig.type === 'gemini') {
+        // Gemini is still monolithic for now, or could be split if Gemini supports it. 
+        // Keeping original flow for Gemini but mapping to new state structure.
+        const interrogationResult = await generateTags(base64, selectedFile.type, backendConfig);
+        setResult(interrogationResult);
+        setLoadingState({ tags: false, description: false });
+        setAppState(AppState.SUCCESS);
+      } else {
+        // Local Hybrid: Parallel Execution
+
+        // 1. Fetch Tags
+        const tagsPromise = fetchLocalTags(base64, backendConfig)
+          .then(tags => {
+            setResult(prev => ({ ...prev, tags: tags || [] }));
+            setLoadingState(prev => ({ ...prev, tags: false }));
+          })
+          .catch(err => {
+            console.error("Tags failed", err);
+            setLoadingState(prev => ({ ...prev, tags: false }));
+            // Don't fail the whole app, just this part
+          });
+
+        // 2. Fetch Description
+        const descPromise = fetchOllamaDescription(base64, backendConfig)
+          .then(desc => {
+            setResult(prev => ({ ...prev, naturalDescription: desc }));
+            setLoadingState(prev => ({ ...prev, description: false }));
+          })
+          .catch(err => {
+            console.error("Description failed", err);
+            setLoadingState(prev => ({ ...prev, description: false }));
+          });
+
+        // Wait for both to settle to determine final AppState (optional, or just let UI handle partials)
+        await Promise.allSettled([tagsPromise, descPromise]);
+
+        // If at least one succeeded, we are in a "Success" or "Partial Success" state
+        // For simplicity, if we are done loading, we set SUCCESS (even if one failed, the UI shows error for that part)
+        setAppState(AppState.SUCCESS);
+      }
+
     } catch (err: any) {
       console.error(err);
       const msg = err?.message || "Failed to interrogate image.";
       setError(msg);
       setAppState(AppState.ERROR);
+      setLoadingState({ tags: false, description: false });
     }
   };
 
+  // Deprecated/Modified: handleGenerateCaption is now part of the main flow for Local Hybrid, 
+  // but kept for Gemini or manual re-trigger if needed.
   const handleGenerateCaption = async () => {
     if (!selectedFile || !result) return;
-
-    // Strict validation before starting
     if (!validateBackendConfig()) return;
 
     setIsGeneratingCaption(true);
     try {
       const base64 = await fileToBase64(selectedFile);
-      // Pass backendConfig to the service
       const caption = await generateCaption(base64, selectedFile.type, backendConfig);
       setResult(prev => prev ? { ...prev, naturalDescription: caption } : null);
     } catch (err) {
@@ -123,54 +164,54 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-[#0f172a] text-slate-900 dark:text-slate-200 selection:bg-red-500/30 selection:text-red-800 dark:selection:text-red-200 transition-colors duration-300">
       <Header theme={theme} setTheme={setTheme} backendConfig={backendConfig} />
-      
+
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 gap-8 flex flex-col lg:flex-row">
-        
+
         {/* Left Column: Input */}
         <div className="w-full lg:w-[400px] xl:w-[450px] flex flex-col gap-6 shrink-0">
           <div className="space-y-2">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Input Image</h2>
-            <ImageUpload 
-              onImageSelect={handleImageSelect} 
+            <ImageUpload
+              onImageSelect={handleImageSelect}
               selectedImage={selectedFile}
               onClear={handleClear}
             />
           </div>
 
           <div className="space-y-4">
-             <button
-               onClick={handleInterrogate}
-               disabled={!selectedFile || appState === AppState.ANALYZING}
-               className={`
+            <button
+              onClick={handleInterrogate}
+              disabled={!selectedFile || appState === AppState.ANALYZING}
+              className={`
                  w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg
-                 ${!selectedFile 
-                   ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed' 
-                   : appState === AppState.ANALYZING
-                     ? 'bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-300 cursor-wait border border-red-200 dark:border-red-500/30'
-                     : 'bg-red-600 hover:bg-red-500 text-white hover:shadow-red-500/25 border border-red-400/20'
-                 }
+                 ${!selectedFile
+                  ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
+                  : appState === AppState.ANALYZING
+                    ? 'bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-300 cursor-wait border border-red-200 dark:border-red-500/30'
+                    : 'bg-red-600 hover:bg-red-500 text-white hover:shadow-red-500/25 border border-red-400/20'
+                }
                `}
-             >
-               {appState === AppState.ANALYZING ? (
-                 <>
-                   <Loader2 className="w-5 h-5 animate-spin" />
-                   Interrogating...
-                 </>
-               ) : (
-                 <>
-                   <Wand2 className="w-5 h-5" />
-                   Start Interrogation
-                 </>
-               )}
-             </button>
-             
-             <ToleranceControl 
-               settings={settings} 
-               backendConfig={backendConfig}
-               onSettingsChange={setSettings}
-               onBackendChange={setBackendConfig}
-               disabled={appState === AppState.ANALYZING}
-             />
+            >
+              {appState === AppState.ANALYZING ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Interrogating...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-5 h-5" />
+                  Start Interrogation
+                </>
+              )}
+            </button>
+
+            <ToleranceControl
+              settings={settings}
+              backendConfig={backendConfig}
+              onSettingsChange={setSettings}
+              onBackendChange={setBackendConfig}
+              disabled={appState === AppState.ANALYZING}
+            />
           </div>
         </div>
 
@@ -184,7 +225,7 @@ const App: React.FC = () => {
               </span>
             )}
           </div>
-          
+
           <div className="flex-1 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-1 transition-colors duration-300">
             {appState === AppState.ERROR && (
               <div className="h-full flex flex-col items-center justify-center text-red-500 dark:text-red-400 p-8 text-center">
@@ -192,30 +233,30 @@ const App: React.FC = () => {
                 <h3 className="text-lg font-bold mb-2">Analysis Failed</h3>
                 <p className="text-slate-600 dark:text-slate-500 max-w-md">{error}</p>
                 {backendConfig.type === 'local_hybrid' && (
-                   <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800/50 rounded text-xs text-left">
-                      <p className="font-semibold mb-1">Troubleshooting Local Mode:</p>
-                      <ul className="list-disc list-inside opacity-70 space-y-1">
-                        <li>Ensure Ollama is running at {backendConfig.ollamaEndpoint}</li>
-                        <li>Ensure Local Tagger is running at {backendConfig.taggerEndpoint}</li>
-                        <li>Check CORS headers on both local servers</li>
-                      </ul>
-                   </div>
+                  <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800/50 rounded text-xs text-left">
+                    <p className="font-semibold mb-1">Troubleshooting Local Mode:</p>
+                    <ul className="list-disc list-inside opacity-70 space-y-1">
+                      <li>Ensure Ollama is running at {backendConfig.ollamaEndpoint}</li>
+                      <li>Ensure Local Tagger is running at {backendConfig.taggerEndpoint}</li>
+                      <li>Check CORS headers on both local servers</li>
+                    </ul>
+                  </div>
                 )}
               </div>
             )}
 
             {(appState === AppState.IDLE && !result) && (
-               <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-600 p-8">
-                 <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-6 transition-colors duration-300">
-                   <Wand2 className="w-10 h-10 opacity-20" />
-                 </div>
-                 <p className="text-center max-w-sm text-slate-600 dark:text-slate-500">
-                   Upload an image and click "Start Interrogation".
-                 </p>
-                 <p className="text-xs mt-2 opacity-60">
-                   Current Backend: {backendConfig.type === 'local_hybrid' ? 'Local Hybrid (Ollama + Tagger)' : 'Google Gemini'}
-                 </p>
-               </div>
+              <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-600 p-8">
+                <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-6 transition-colors duration-300">
+                  <Wand2 className="w-10 h-10 opacity-20" />
+                </div>
+                <p className="text-center max-w-sm text-slate-600 dark:text-slate-500">
+                  Upload an image and click "Start Interrogation".
+                </p>
+                <p className="text-xs mt-2 opacity-60">
+                  Current Backend: {backendConfig.type === 'local_hybrid' ? 'Local Hybrid (Ollama + Tagger)' : 'Google Gemini'}
+                </p>
+              </div>
             )}
 
             {appState === AppState.ANALYZING && (
@@ -227,21 +268,22 @@ const App: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-center space-y-1">
-                   <p className="font-medium text-slate-700 dark:text-slate-200">Analyzing Visual Data</p>
-                   <p className="text-sm text-slate-500">
-                     Using {backendConfig.type === 'gemini' ? 'Gemini Cloud AI' : 'Local Hybrid Workflow'}...
-                   </p>
+                  <p className="font-medium text-slate-700 dark:text-slate-200">Analyzing Visual Data</p>
+                  <p className="text-sm text-slate-500">
+                    Using {backendConfig.type === 'gemini' ? 'Gemini Cloud AI' : 'Local Hybrid Workflow'}...
+                  </p>
                 </div>
               </div>
             )}
 
             {result && (
               <div className="h-full p-4">
-                <Results 
-                  result={result} 
-                  settings={settings} 
+                <Results
+                  result={result}
+                  settings={settings}
                   onGenerateCaption={handleGenerateCaption}
                   isGeneratingCaption={isGeneratingCaption}
+                  loadingState={loadingState}
                 />
               </div>
             )}
