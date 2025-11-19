@@ -637,14 +637,19 @@ const generateTagsLocalHybrid = async (base64Image: string, config: BackendConfi
   }
 
   let ollamaData: { tags: Tag[], summary: string | undefined } = { tags: [], summary: undefined };
-  try {
-    // Pass enriched local tags to Ollama for better context
-    ollamaData = await fetchOllamaTagsAndSummary(base64Image, config, localTags);
-  } catch (e) {
-    console.error("Ollama Failed:", e);
+  
+  // Only call Ollama if Natural Language is enabled
+  if (config.enableNaturalLanguage) {
+    try {
+      // Pass enriched local tags to Ollama for better context
+      ollamaData = await fetchOllamaTagsAndSummary(base64Image, config, localTags);
+    } catch (e) {
+      console.error("Ollama Failed:", e);
+    }
   }
 
   // Merging Strategy
+  // If Ollama was skipped, ollamaData.tags will be empty, so mergeTags will just return localTags (with source='local')
   let combinedTags = mergeTags(localTags, ollamaData.tags);
   
   return {
