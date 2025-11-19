@@ -66,6 +66,49 @@ const generateTagsGemini = async (base64Image: string, mimeType: string, config:
 // Orchestrates: Local Tagger -> Ollama (Clean/Categorize + Caption)
 // --- LOCAL HYBRID IMPLEMENTATION ---
 
+// --- HELPER FUNCTIONS ---
+
+const getProxiedOllamaEndpoint = (originalEndpoint: string): string => {
+  if (originalEndpoint.includes('ollama.gpu.garden')) {
+    // Remove protocol and domain
+    let path = originalEndpoint.replace(/^https?:\/\//, '').replace(/^ollama\.gpu\.garden/, '');
+    
+    // Ensure path starts with / if it's not empty
+    if (!path) {
+      path = ''; // Ollama endpoints usually don't have a trailing slash when used as base, but let's be careful
+    } else if (!path.startsWith('/')) {
+      path = '/' + path;
+    }
+    
+    // Remove trailing slash if present to avoid double slashes when appending /api/tags
+    if (path.endsWith('/')) {
+      path = path.slice(0, -1);
+    }
+
+    const newEndpoint = `/ollama/gpu-garden${path}`;
+    console.log(`[Proxy] Rewrote Ollama ${originalEndpoint} to ${newEndpoint}`);
+    return newEndpoint;
+  }
+  return originalEndpoint;
+};
+
+const determineCategory = (name: string): TagCategory => {
+  // Strict Rating Categorization
+  if (name.startsWith('rating:') || ['general', 'safe', 'questionable', 'explicit', 'sensitive', 'nsfw'].includes(name)) {
+    return 'rating';
+  }
+  // Meta / Technical Tags
+  if (['highres', 'absurdres', '4k', '8k', 'masterpiece', 'best quality', 'comic', 'monochrome', 'greyscale', 'lowres', 'bad quality', 'worst quality'].includes(name)) {
+    return 'meta';
+  }
+  // Character Counts (Danbooru puts these in General, but users often see them as character-related. Keeping as General per strict Danbooru)
+  if (['1girl', '1boy', '2girls', '2boys', 'multiple girls', 'multiple boys'].includes(name)) {
+    return 'general'; 
+  }
+  
+  return 'general';
+};
+
 export const fetchLocalTags = async (base64Image: string, config: BackendConfig): Promise<Tag[]> => {
   if (!config.taggerEndpoint || config.taggerEndpoint.trim() === '') {
     throw new Error("Local Tagger endpoint is invalid or missing.");
@@ -83,10 +126,28 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig)
   const formData = new FormData();
   formData.append('file', blob, 'image.png');
 
+  // Automatic Proxy Handling for known CORS-restricted endpoints
+  let endpoint = config.taggerEndpoint;
+  if (endpoint.includes('localtagger.gpu.garden')) {
+    // Remove protocol and domain to get the relative path
+    let path = endpoint.replace(/^https?:\/\//, '').replace(/^localtagger\.gpu\.garden/, '');
+    
+    // If path is empty or just '/', default to '/interrogate/pixai'
+    if (!path || path === '/') {
+      path = '/interrogate/pixai';
+    } else if (!path.startsWith('/')) {
+      path = '/' + path;
+    }
+    
+    // Construct the proxy endpoint
+    endpoint = `/interrogate/gpu-garden${path}`;
+    console.log(`[Proxy] Rewrote ${config.taggerEndpoint} to ${endpoint}`);
+  }
+
   try {
     // User verified curl command: curl -X POST -F "file=@..." http://localhost:8000/interrogate/pixai
     // We stick to this exactly, removing hardcoded threshold and model params that might cause issues.
-    const response = await fetch(config.taggerEndpoint, {
+    const response = await fetch(endpoint, {
       method: 'POST',
       body: formData,
     });
@@ -97,40 +158,64 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig)
 
     const data = await response.json();
     // Expected format: { tags: { "1girl": 0.99, ... }, tag_string: "..." }
+    // OR Array format: { tags: [["1girl", 0.99], ...] } or { tags: [{name: "1girl", score: 0.99}, ...] }
 
     const tags: Tag[] = [];
-    if (data.tags && typeof data.tags === 'object') {
-      Object.entries(data.tags).forEach(([name, score]) => {
-        // Basic categorization for common technical/rating tags if not provided
-        let category: TagCategory = 'general';
-        
-        // Strict Rating Categorization
-        if (name.startsWith('rating:') || ['general', 'safe', 'questionable', 'explicit', 'sensitive', 'nsfw'].includes(name)) {
-          category = 'rating';
-        }
-        // Meta / Technical Tags
-        else if (['highres', 'absurdres', '4k', '8k', 'masterpiece', 'best quality', 'comic', 'monochrome', 'greyscale', 'lowres', 'bad quality', 'worst quality'].includes(name)) {
-          category = 'meta';
-        }
-        // Character Counts (Danbooru puts these in General, but users often see them as character-related. Keeping as General per strict Danbooru)
-        else if (['1girl', '1boy', '2girls', '2boys', 'multiple girls', 'multiple boys'].includes(name)) {
-          category = 'general'; 
-        }
-        // Note: Without a database, we cannot distinguish 'character' or 'copyright' from 'general' tags 
-        // (e.g. 'cirno' vs 'blue_dress'). They will default to 'general'.
+    
+    if (data.tags) {
+      if (Array.isArray(data.tags)) {
+        // Handle Array format
+        data.tags.forEach((item: any) => {
+          let name = '';
+          let score = 0;
+          
+          if (Array.isArray(item)) {
+            name = item[0];
+            score = Number(item[1]);
+          } else if (typeof item === 'object') {
+            name = item.name || item.tag;
+            score = Number(item.score || item.confidence || item.probability);
+          }
 
-        tags.push({
-          name,
-          score: Number(score),
-          category
+          if (name) {
+            tags.push({
+              name,
+              score,
+              category: determineCategory(name)
+            });
+          }
         });
-      });
+      } else if (typeof data.tags === 'object') {
+        // Handle Object format
+        Object.entries(data.tags).forEach(([name, score]) => {
+          tags.push({
+            name,
+            score: Number(score),
+            category: determineCategory(name)
+          });
+        });
+      }
     }
 
+    // Filter out known hallucinations
+    const filteredTags = tags.filter(tag => {
+      // Filter blue_skin / colored_skin if confidence is low (likely a false positive from lighting)
+      if (['blue_skin', 'colored_skin'].includes(tag.name) && tag.score < 0.85) {
+        return false;
+      }
+      return true;
+    });
+
     // Sort by score descending
-    return tags.sort((a, b) => b.score - a.score);
-  } catch (error) {
+    return filteredTags.sort((a, b) => b.score - a.score);
+  } catch (error: any) {
     console.error("Fetch Local Tags Error:", error);
+    
+    // Enhance error message for common CORS issues with remote URLs
+    if (config.taggerEndpoint.startsWith('http') && !config.taggerEndpoint.includes('localhost') && error.message === 'Failed to fetch') {
+      throw new Error(`Network Error (CORS): The browser blocked the request to ${config.taggerEndpoint}. This is a security feature. To fix this, update vite.config.ts to proxy this URL, or ensure the server allows CORS.`);
+    }
+    
     throw error;
   }
 };
@@ -140,8 +225,10 @@ export const fetchOllamaModels = async (endpoint: string): Promise<string[]> => 
     return [];
   }
 
+  const proxiedEndpoint = getProxiedOllamaEndpoint(endpoint);
+
   try {
-    const response = await fetch(`${endpoint}/api/tags`);
+    const response = await fetch(`${proxiedEndpoint}/api/tags`);
     if (!response.ok) {
       throw new Error(`Failed to fetch models: ${response.statusText}`);
     }
@@ -159,8 +246,10 @@ export const fetchOllamaDescription = async (base64Image: string, config: Backen
     throw new Error("Ollama endpoint is invalid or missing.");
   }
 
+  const proxiedEndpoint = getProxiedOllamaEndpoint(config.ollamaEndpoint);
+
   try {
-    const response = await fetch(`${config.ollamaEndpoint}/api/generate`, {
+    const response = await fetch(`${proxiedEndpoint}/api/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -349,6 +438,8 @@ export const generateCaption = async (
       throw new Error("Ollama endpoint is missing.");
     }
     
+    const proxiedEndpoint = getProxiedOllamaEndpoint(config.ollamaEndpoint);
+
     let prompt = "Describe this image in detail for an image generation prompt.";
     if (existingTags && existingTags.length > 0) {
        const tagList = existingTags.map(t => t.name.replace(/_/g, ' ')).join(', ');
@@ -365,7 +456,7 @@ export const generateCaption = async (
        `;
     }
 
-    const response = await fetch(`${config.ollamaEndpoint}/api/generate`, {
+    const response = await fetch(`${proxiedEndpoint}/api/generate`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

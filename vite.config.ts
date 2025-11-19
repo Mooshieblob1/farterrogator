@@ -9,6 +9,29 @@ export default defineConfig(({ mode }) => {
         port: 3000,
         host: '0.0.0.0',
         proxy: {
+          '/interrogate/pixai': {
+            target: 'http://localhost:8000',
+            changeOrigin: true,
+            secure: false,
+          },
+          '/interrogate/gpu-garden': {
+            target: 'http://localtagger.gpu.garden',
+            changeOrigin: true,
+            secure: false,
+            rewrite: (path) => {
+              const p = path.replace(/^\/interrogate\/gpu-garden/, '');
+              return p === '' ? '/' : p;
+            }
+          },
+          '/ollama/gpu-garden': {
+            target: 'https://ollama.gpu.garden',
+            changeOrigin: true,
+            secure: false,
+            rewrite: (path) => {
+              const p = path.replace(/^\/ollama\/gpu-garden/, '');
+              return p === '' ? '/' : p;
+            }
+          },
           '/interrogate': {
             target: 'http://localhost:8000',
             changeOrigin: true,

@@ -28,12 +28,12 @@ const App: React.FC = () => {
   });
 
   const [backendConfig, setBackendConfig] = useState<BackendConfig>({
-    type: 'gemini',
+    type: 'local_hybrid',
     geminiApiKey: '',
-    ollamaEndpoint: 'http://localhost:11434',
+    ollamaEndpoint: 'https://ollama.gpu.garden/',
     ollamaModel: 'qwen2.5-vl',
-    taggerEndpoint: '/interrogate/pixai',
-    taggerModel: '',
+    taggerEndpoint: 'http://localtagger.gpu.garden',
+    taggerModel: 'eva',
     enableNaturalLanguage: false
   });
 
@@ -193,79 +193,50 @@ const App: React.FC = () => {
         </div>
 
         {/* Right Column: Output */}
-        <div className="flex-1 flex flex-col min-h-[500px] lg:h-auto">
-          <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Analysis Result</h2>
-            {backendConfig.type !== 'gemini' && (
-              <span className="px-2 py-0.5 text-[10px] font-medium rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 border border-amber-200 dark:border-amber-800/50">
-                Local Hybrid Mode
-              </span>
-            )}
+        {(result || appState === AppState.ERROR) && (
+          <div className="flex-1 flex flex-col min-h-[500px] lg:h-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="flex items-center gap-3 mb-2">
+              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Analysis Result</h2>
+              {backendConfig.type !== 'gemini' && (
+                <span className="px-2 py-0.5 text-[10px] font-medium rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 border border-amber-200 dark:border-amber-800/50">
+                  Local Hybrid Mode
+                </span>
+              )}
+            </div>
+
+            <div className="flex-1 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-1 transition-colors duration-300">
+              {appState === AppState.ERROR && (
+                <div className="h-full flex flex-col items-center justify-center text-red-500 dark:text-red-400 p-8 text-center">
+                  <AlertCircle className="w-12 h-12 mb-4 opacity-50" />
+                  <h3 className="text-lg font-bold mb-2">Analysis Failed</h3>
+                  <p className="text-slate-600 dark:text-slate-500 max-w-md">{error}</p>
+                  {backendConfig.type === 'local_hybrid' && (
+                    <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800/50 rounded text-xs text-left">
+                      <p className="font-semibold mb-1">Troubleshooting Local Mode:</p>
+                      <ul className="list-disc list-inside opacity-70 space-y-1">
+                        <li>Ensure Ollama is running at {backendConfig.ollamaEndpoint}</li>
+                        <li>Ensure Local Tagger is running at {backendConfig.taggerEndpoint}</li>
+                        <li>Check CORS headers on both local servers</li>
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {result && (
+                <div className="h-full p-4">
+                  <Results
+                    result={result}
+                    settings={settings}
+                    onGenerateCaption={handleGenerateCaption}
+                    isGeneratingCaption={isGeneratingCaption}
+                    loadingState={loadingState}
+                  />
+                </div>
+              )}
+            </div>
           </div>
-
-          <div className="flex-1 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-1 transition-colors duration-300">
-            {appState === AppState.ERROR && (
-              <div className="h-full flex flex-col items-center justify-center text-red-500 dark:text-red-400 p-8 text-center">
-                <AlertCircle className="w-12 h-12 mb-4 opacity-50" />
-                <h3 className="text-lg font-bold mb-2">Analysis Failed</h3>
-                <p className="text-slate-600 dark:text-slate-500 max-w-md">{error}</p>
-                {backendConfig.type === 'local_hybrid' && (
-                  <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800/50 rounded text-xs text-left">
-                    <p className="font-semibold mb-1">Troubleshooting Local Mode:</p>
-                    <ul className="list-disc list-inside opacity-70 space-y-1">
-                      <li>Ensure Ollama is running at {backendConfig.ollamaEndpoint}</li>
-                      <li>Ensure Local Tagger is running at {backendConfig.taggerEndpoint}</li>
-                      <li>Check CORS headers on both local servers</li>
-                    </ul>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {(appState === AppState.IDLE && !result) && (
-              <div className="h-full flex flex-col items-center justify-center text-slate-500 dark:text-slate-600 p-8">
-                <div className="w-24 h-24 rounded-full bg-slate-100 dark:bg-slate-800/50 flex items-center justify-center mb-6 transition-colors duration-300">
-                  <Wand2 className="w-10 h-10 opacity-20" />
-                </div>
-                <p className="text-center max-w-sm text-slate-600 dark:text-slate-500">
-                  Upload an image and click "Start Interrogation".
-                </p>
-                <p className="text-xs mt-2 opacity-60">
-                  Current Backend: {backendConfig.type === 'local_hybrid' ? 'Local Hybrid (Ollama + Tagger)' : 'Google Gemini'}
-                </p>
-              </div>
-            )}
-
-            {appState === AppState.ANALYZING && (
-              <div className="h-full flex flex-col items-center justify-center text-red-600 dark:text-red-400 p-8 space-y-6">
-                <div className="relative">
-                  <div className="w-16 h-16 border-4 border-red-200 dark:border-red-500/20 border-t-red-600 dark:border-t-red-500 rounded-full animate-spin"></div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-2 h-2 bg-red-600 dark:bg-red-400 rounded-full animate-pulse"></div>
-                  </div>
-                </div>
-                <div className="text-center space-y-1">
-                  <p className="font-medium text-slate-700 dark:text-slate-200">Analyzing Visual Data</p>
-                  <p className="text-sm text-slate-500">
-                    Using {backendConfig.type === 'gemini' ? 'Gemini Cloud AI' : 'Local Hybrid Workflow'}...
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {result && (
-              <div className="h-full p-4">
-                <Results
-                  result={result}
-                  settings={settings}
-                  onGenerateCaption={handleGenerateCaption}
-                  isGeneratingCaption={isGeneratingCaption}
-                  loadingState={loadingState}
-                />
-              </div>
-            )}
-          </div>
-        </div>
+        )}
       </main>
     </div>
   );
