@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Upload, Image as ImageIcon, X, Loader2 } from 'lucide-react';
 
 interface ImageUploadProps {
@@ -8,6 +9,7 @@ interface ImageUploadProps {
 }
 
 export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selectedImage, onClear }) => {
+  const { t } = useTranslation();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -151,6 +153,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
         <button 
           onClick={handleClear}
           className="absolute top-4 right-4 p-2 bg-white/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-200 rounded-full hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/20 dark:hover:text-red-400 transition-colors border border-slate-200 dark:border-slate-700 backdrop-blur-sm opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-200"
+          title={t('upload.clear')}
         >
           <X className="w-5 h-5" />
         </button>
@@ -158,7 +161,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
            <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-20">
               <div className="flex flex-col items-center gap-2 text-white">
                 <Loader2 className="w-8 h-8 animate-spin" />
-                <span className="text-sm font-medium">Optimizing image...</span>
+                <span className="text-sm font-medium">{t('results.processing')}</span>
               </div>
            </div>
         )}
@@ -197,10 +200,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
       
       <div className="text-center space-y-1 pointer-events-none">
         <p className="text-lg font-medium text-slate-700 dark:text-slate-200">
-          {isProcessing ? 'Processing image...' : 'Drop image here, paste (Ctrl+V), or click to upload'}
+          {isProcessing ? t('results.processing') : t('upload.dragDrop')}
         </p>
         <p className="text-sm text-slate-500">
-          Supports JPG, PNG, WEBP (Max 10MB, auto-resized)
+          {t('upload.supports')}
         </p>
       </div>
     </div>

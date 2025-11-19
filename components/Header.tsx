@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Sparkles, HelpCircle } from 'lucide-react';
 import { ThemeToggle } from './ThemeToggle';
+import { LanguageSelector } from './LanguageSelector';
 import { Theme } from '../hooks/useTheme';
 import { BackendConfig } from '../types';
 import { InfoModal } from './InfoModal';
@@ -12,6 +14,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ theme, setTheme, backendConfig }) => {
+  const { t } = useTranslation();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const modelDisplay = useMemo(() => {
@@ -20,9 +23,9 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme, backendConfig }
     }
     if (backendConfig.type === 'local_hybrid') {
       const model = backendConfig.ollamaModel?.trim();
-      return model && model.length > 0 ? model : "Nothing yet";
+      return model && model.length > 0 ? model : t('header.nothingYet');
     }
-    return "Nothing yet";
+    return t('header.nothingYet');
   }, [backendConfig]);
 
   return (
@@ -38,9 +41,9 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme, backendConfig }
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900 dark:text-slate-100 tracking-tight">
-              Fart<span className="text-red-600 dark:text-red-500">errogator</span>
+              {t('app.title').substring(0, 4)}<span className="text-red-600 dark:text-red-500">{t('app.title').substring(4)}</span>
             </h1>
-            <p className="text-xs text-slate-500 font-medium">AI Image Interrogator</p>
+            <p className="text-xs text-slate-500 font-medium">{t('app.subtitle')}</p>
           </div>
         </div>
 
@@ -49,7 +52,7 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme, backendConfig }
           className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors text-sm font-medium"
         >
           <HelpCircle className="w-4 h-4" />
-          What is this?
+          {t('header.whatIsThis')}
         </button>
 
         <div className="flex items-center gap-4">
@@ -69,8 +72,9 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme, backendConfig }
           </a>
           <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
             <Sparkles className="w-3 h-3 text-red-500 dark:text-red-400" />
-            <span className="text-xs text-slate-600 dark:text-slate-400">Powered by {modelDisplay}</span>
+            <span className="text-xs text-slate-600 dark:text-slate-400">{t('header.poweredBy', { model: modelDisplay })}</span>
           </div>
+          <LanguageSelector />
           <ThemeToggle theme={theme} setTheme={setTheme} />
         </div>
       </div>

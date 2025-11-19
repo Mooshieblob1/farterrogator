@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Loader2, AlertCircle, Wand2, Sparkles } from 'lucide-react';
 import { Header } from './components/Header';
 import { ImageUpload } from './components/ImageUpload';
@@ -9,6 +10,7 @@ import { AppState, InterrogationResult, TaggingSettings, BackendConfig } from '.
 import { useTheme } from './hooks/useTheme';
 
 const App: React.FC = () => {
+  const { t } = useTranslation();
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [result, setResult] = useState<InterrogationResult | null>(null);
@@ -87,18 +89,18 @@ const App: React.FC = () => {
   const validateBackendConfig = (): boolean => {
     if (backendConfig.type === 'gemini') {
       if (!backendConfig.geminiApiKey || backendConfig.geminiApiKey.trim() === '') {
-        setError("Gemini API Key is required. Please configure it in the settings panel.");
+        setError(t('errors.geminiKeyRequired'));
         setAppState(AppState.ERROR);
         return false;
       }
     } else if (backendConfig.type === 'local_hybrid') {
       if (!backendConfig.ollamaEndpoint || backendConfig.ollamaEndpoint.trim() === '') {
-        setError("Ollama Endpoint is required for Pixai mode.");
+        setError(t('errors.ollamaRequired'));
         setAppState(AppState.ERROR);
         return false;
       }
       if (!backendConfig.taggerEndpoint || backendConfig.taggerEndpoint.trim() === '') {
-        setError("Local Tagger Endpoint is required for Pixai mode.");
+        setError(t('errors.taggerRequired'));
         setAppState(AppState.ERROR);
         return false;
       }
@@ -147,7 +149,7 @@ const App: React.FC = () => {
     } catch (err) {
       console.error(err);
       setAppState(AppState.ERROR);
-      setError(err instanceof Error ? err.message : "An unknown error occurred");
+      setError(err instanceof Error ? err.message : t('errors.unknown'));
     } finally {
       setLoadingState({ tags: false, description: false, progress: 100, status: 'Done' });
     }
@@ -213,12 +215,12 @@ const App: React.FC = () => {
               {appState === AppState.ANALYZING ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Interrogating...
+                  {t('results.analyzing')}
                 </>
               ) : (
                 <>
                   <Wand2 className="w-5 h-5" />
-                  Start Interrogation
+                  {t('upload.interrogate')}
                 </>
               )}
             </button>
@@ -236,7 +238,7 @@ const App: React.FC = () => {
         {/* Right Column: Output */}
         <div className="flex-1 flex flex-col min-h-[500px] lg:h-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="flex items-center gap-3 mb-2">
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Analysis Result</h2>
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t('results.title')}</h2>
             {backendConfig.type !== 'gemini' && (
               <span className="px-2 py-0.5 text-[10px] font-medium rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 border border-amber-200 dark:border-amber-800/50">
                 Pixai
@@ -248,23 +250,23 @@ const App: React.FC = () => {
             {!result && appState !== AppState.ERROR && (
               <div className="absolute inset-0 m-2 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
                 <Sparkles className="w-12 h-12 mb-3 opacity-20" />
-                <p className="font-medium opacity-50">Ready to Interrogate</p>
-                <p className="text-sm opacity-30 mt-1">Upload an image to see tags and description</p>
+                <p className="font-medium opacity-50">{t('results.ready')}</p>
+                <p className="text-sm opacity-30 mt-1">{t('results.readySub')}</p>
               </div>
             )}
 
             {appState === AppState.ERROR && (
               <div className="h-full flex flex-col items-center justify-center text-red-500 dark:text-red-400 p-8 text-center">
                 <AlertCircle className="w-12 h-12 mb-4 opacity-50" />
-                <h3 className="text-lg font-bold mb-2">Analysis Failed</h3>
+                <h3 className="text-lg font-bold mb-2">{t('results.failed')}</h3>
                 <p className="text-slate-600 dark:text-slate-500 max-w-md">{error}</p>
                 {backendConfig.type === 'local_hybrid' && (
                   <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800/50 rounded text-xs text-left">
-                    <p className="font-semibold mb-1">Troubleshooting Local Mode:</p>
+                    <p className="font-semibold mb-1">{t('results.troubleshoot')}</p>
                     <ul className="list-disc list-inside opacity-70 space-y-1">
-                      <li>Ensure Ollama is running at {backendConfig.ollamaEndpoint}</li>
-                      <li>Ensure Local Tagger is running at {backendConfig.taggerEndpoint}</li>
-                      <li>Check CORS headers on both local servers</li>
+                      <li>{t('results.troubleshootOllama', { endpoint: backendConfig.ollamaEndpoint })}</li>
+                      <li>{t('results.troubleshootTagger', { endpoint: backendConfig.taggerEndpoint })}</li>
+                      <li>{t('results.troubleshootCors')}</li>
                     </ul>
                   </div>
                 )}
@@ -288,7 +290,7 @@ const App: React.FC = () => {
       </main>
       
       <footer className="py-6 text-center text-xs text-slate-400 dark:text-slate-600">
-        <p>&copy; {new Date().getFullYear() > 2025 ? `2025-${new Date().getFullYear()}` : '2025'} Fartcore. All rights reserved.</p>
+        <p>{t('app.copyright', { year: new Date().getFullYear() > 2025 ? `2025-${new Date().getFullYear()}` : '2025' })}</p>
       </footer>
     </div>
   );

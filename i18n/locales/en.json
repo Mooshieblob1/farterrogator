@@ -1,0 +1,120 @@
+{
+  "app": {
+    "title": "Farterrogator",
+    "subtitle": "AI Image Interrogator",
+    "copyright": "© {{year}} Fartcore. All rights reserved."
+  },
+  "header": {
+    "whatIsThis": "What is this?",
+    "poweredBy": "Powered by {{model}}",
+    "nothingYet": "Nothing yet"
+  },
+  "upload": {
+    "dragDrop": "Drag & drop an image here, or click to select",
+    "supports": "Supports PNG, JPG, WEBP, GIF",
+    "clear": "Clear Image",
+    "interrogate": "Interrogate"
+  },
+  "results": {
+    "title": "Analysis Result",
+    "ready": "Ready to Interrogate",
+    "readySub": "Upload an image to see tags and description",
+    "failed": "Analysis Failed",
+    "troubleshoot": "Troubleshooting Local Mode:",
+    "troubleshootOllama": "Ensure Ollama is running at {{endpoint}}",
+    "troubleshootTagger": "Ensure Local Tagger is running at {{endpoint}}",
+    "troubleshootCors": "Check CORS headers on both local servers",
+    "processing": "Processing...",
+    "analyzing": "Analyzing...",
+    "generatingTags": "Generating Technical tags...",
+    "descriptionNotGenerated": "Description not generated.",
+    "generateDescription": "Generate Natural Language Description",
+    "technicalTags": "Technical Tags",
+    "randomized": "Randomized",
+    "noUnderscores": "No Underscores",
+    "copyAll": "Copy All",
+    "copied": "Copied!",
+    "naiReady": "NAI Ready",
+    "tagsCopied": "All tags copied to clipboard!",
+    "descriptionCopied": "Description copied to clipboard!",
+    "embedFailed": "Failed to create NAI ready image."
+  },
+  "settings": {
+    "title": "Settings",
+    "thresholds": "Thresholds",
+    "outputSettings": "Output Settings",
+    "backendSettings": "Backend Settings",
+    "topK": "Top K Tags",
+    "randomize": "Randomize Order",
+    "removeUnderscores": "Remove Underscores",
+    "backendType": "Backend Type",
+    "geminiKey": "Gemini API Key",
+    "ollamaEndpoint": "Ollama Endpoint",
+    "ollamaModel": "Ollama Model",
+    "refresh": "Refresh",
+    "taggerEndpoint": "Local Tagger Endpoint",
+    "enableNaturalLanguage": "Enable Natural Language",
+    "naturalLanguageWarning": "(this will take longer)",
+    "simpleMode": "Simple Mode",
+    "advancedThresholds": "Advanced Thresholds",
+    "backend": {
+      "provider": "Provider",
+      "pixai": "Pixai (Ollama + Tagger)",
+      "gemini": "Google Gemini",
+      "keyStorage": "Key is stored in memory only.",
+      "pixaiDescription": "Seamlessly combines local tagger results with Ollama's reasoning and captioning capabilities.",
+      "ollamaEndpointLabel": "Ollama Endpoint (LLM/Vision)",
+      "ollamaModel": "Ollama Model"
+    },
+    "categories": {
+      "general": "General",
+      "character": "Character",
+      "copyright": "Copyright",
+      "artist": "Artist",
+      "meta": "Meta",
+      "rating": "Rating"
+    }
+  },
+  "errors": {
+    "geminiKeyRequired": "Gemini API Key is required. Please configure it in the settings panel.",
+    "ollamaRequired": "Ollama Endpoint is required for Pixai mode.",
+    "taggerRequired": "Local Tagger Endpoint is required for Pixai mode.",
+    "unknown": "An unknown error occurred"
+  },
+  "info": {
+    "title": "What is Farterrogator?",
+    "description": "Farterrogator is an advanced AI image interrogation tool designed to analyze images and extract detailed metadata, tags, and natural language descriptions. It helps artists, developers, and enthusiasts understand the content of their images and prepare them for further AI processing.",
+    "features": {
+      "dualModes": {
+        "title": "Dual Analysis Modes",
+        "description": "Choose between <strong>Google Gemini</strong> for cloud-based state-of-the-art analysis, or <strong>Pixai</strong> which combines a WD1.4 Tagger with Ollama (Vision Models) hosted on <strong>gpu.garden</strong>."
+      },
+      "naiReady": {
+        "title": "NAI Ready Embedding",
+        "description": "Automatically embed generated tags or descriptions into PNG metadata. The resulting images are \"NAI Ready\" - simply drag them into NovelAI to autopopulate prompts with the analyzed data."
+      },
+      "privacy": {
+        "title": "Privacy & Security",
+        "description": "In Pixai mode, your images are processed securely on <strong>gpu.garden</strong> via the <strong>Fartcore data center</strong>. While not running on your device, your data is handled with strict privacy standards."
+      },
+      "gpuGarden": {
+        "title": "GPU Garden Integration",
+        "description": "Optimized for use with GPU Garden's infrastructure, allowing for seamless proxying to remote GPU instances for heavy lifting."
+      }
+    },
+    "howTo": {
+      "title": "How to use",
+      "step1": "Upload an image or drag & drop one onto the canvas.",
+      "step2": "Select your preferred backend (Gemini or Pixai).",
+      "step3": "Adjust confidence thresholds to filter tags.",
+      "step4": "Click <strong>Start Interrogation</strong>.",
+      "step5": "Copy tags, or download an <strong>NAI Ready</strong> PNG to use in your workflow."
+    },
+    "madeBy": "Made by"
+  },
+  "theme": {
+    "light": "Light Mode",
+    "auto": "System Auto",
+    "dark": "Dark Mode"
+  }
+}
