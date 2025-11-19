@@ -33,7 +33,7 @@ const App: React.FC = () => {
     ollamaEndpoint: 'https://ollama.gpu.garden',
     ollamaModel: 'qwen3-vl',
     taggerEndpoint: 'https://localtagger.gpu.garden/interrogate',
-    enableNaturalLanguage: false
+    enableNaturalLanguage: true
   });
 
   const [error, setError] = useState<string | null>(null);

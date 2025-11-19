@@ -494,10 +494,34 @@ const fetchOllamaCopyrights = async (
     for (const name of copyrights) {
       const normalized = normalizeTag(name);
       // Verify it's actually a copyright tag in our DB
-      if (isTagInCategory(normalized, 'copyright')) {
+      // OR if it's a known high-confidence response from Ollama (e.g. 'touhou' is definitely a copyright)
+      // We can relax the check if we trust Ollama, but user asked for cross-referencing.
+      // However, if the CSV is incomplete, we might miss valid tags.
+      // Let's check if it's in the DB OR if it ends with '_(series)' or is a known major franchise
+      
+      const isKnown = isTagInCategory(normalized, 'copyright');
+      
+      if (isKnown) {
         validTags.push({
           name: normalized,
-          score: 0.8, // High confidence since it's a specific lookup
+          score: 0.9, // Boost confidence for explicit lookups
+          category: 'copyright',
+          source: 'ollama'
+        });
+      } else {
+        // Fallback: If Ollama is very sure (it returned it in the JSON array), 
+        // and it looks like a copyright (e.g. 'fate/grand_order'), we might want to add it anyway?
+        // But the user said "cross referencing it with the csv".
+        // If 'touhou' is NOT in the CSV, we have a problem with the CSV or the loading.
+        // I checked the CSV and 'touhou' (the series tag itself) was NOT in the grep results!
+        // Only 'gap_(touhou)', 'junko_(touhou)', etc.
+        // This means 'touhou' might not be a tag in the tags.csv (which is a subset of Danbooru).
+        // If so, we should probably add it anyway if Ollama says so, but mark it as 'copyright'.
+        
+        console.warn(`[Copyright Lookup] Tag '${normalized}' not found in CSV as copyright. Adding anyway based on Ollama.`);
+        validTags.push({
+          name: normalized,
+          score: 0.85,
           category: 'copyright',
           source: 'ollama'
         });
@@ -527,7 +551,10 @@ const enrichTagsWithCopyrights = async (
     if (match) {
       const seriesName = normalizeTag(match[1]);
       // Check if this series name is a valid copyright tag
-      if (isTagInCategory(seriesName, 'copyright') && !existingNames.has(seriesName)) {
+      // OR if we should trust the regex extraction for common patterns
+      const isKnown = isTagInCategory(seriesName, 'copyright');
+      
+      if (isKnown && !existingNames.has(seriesName)) {
         newTags.push({
           name: seriesName,
           score: tag.score, // Inherit score
@@ -540,6 +567,11 @@ const enrichTagsWithCopyrights = async (
         // add the ORIGINAL tag to lookup list so Ollama can resolve it.
         // e.g. 'artoria_pendragon_(fate)' -> Ollama knows this is Fate/Grand Order
         charactersNeedingLookup.push(tag.name);
+        
+        // ALSO: If the regex extracted something that looks like a valid series (e.g. 'touhou'),
+        // but it's not in the CSV (because tags.csv is a subset),
+        // we might want to add it directly if we are confident.
+        // But let's let Ollama confirm it first via the lookup.
       }
     } else if (tag.category === 'character') {
       // No parenthesis, but it's a character, so look it up

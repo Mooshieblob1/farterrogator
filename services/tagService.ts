@@ -23,7 +23,7 @@ export const loadTagDatabase = async (): Promise<void> => {
     if (isLoaded) return;
 
     try {
-        const response = await fetch('/selected_tags.csv');
+        const response = await fetch('/tags.csv');
         if (!response.ok) {
             throw new Error(`Failed to load tag database: ${response.statusText}`);
         }
@@ -31,18 +31,16 @@ export const loadTagDatabase = async (): Promise<void> => {
         const text = await response.text();
         const lines = text.split('\n');
 
-        // Skip header
-        for (let i = 1; i < lines.length; i++) {
+        // No header in tags.csv
+        for (let i = 0; i < lines.length; i++) {
             const line = lines[i].trim();
             if (!line) continue;
 
-            // CSV format: tag_id,name,category,count
-            // Note: name might contain commas? Usually not in Danbooru tags, but good to be aware.
-            // Simple split by comma should work for standard Danbooru tags.
+            // CSV format: name,category,count,aliases
             const parts = line.split(',');
-            if (parts.length >= 3) {
-                const name = parts[1];
-                const categoryId = parseInt(parts[2], 10);
+            if (parts.length >= 2) {
+                const name = parts[0];
+                const categoryId = parseInt(parts[1], 10);
                 const category = CATEGORY_MAPPING[categoryId] || 'general';
 
                 tagDatabase.set(name, category);
