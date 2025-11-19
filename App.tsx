@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Loader2, AlertCircle, Wand2, Sparkles } from 'lucide-react';
 import { Header } from './components/Header';
 import { ImageUpload } from './components/ImageUpload';
@@ -13,28 +13,56 @@ const App: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [result, setResult] = useState<InterrogationResult | null>(null);
 
-  const [settings, setSettings] = useState<TaggingSettings>({
-    thresholds: {
-      general: 0.7,
-      character: 0.7,
-      copyright: 0.7,
-      artist: 0.7,
-      meta: 0.7,
-      rating: 0.8
-    },
-    topK: 50,
-    randomize: false,
-    removeUnderscores: false
+  const [settings, setSettings] = useState<TaggingSettings>(() => {
+    const saved = localStorage.getItem('taggingSettings');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved settings", e);
+      }
+    }
+    return {
+      thresholds: {
+        general: 0.7,
+        character: 0.7,
+        copyright: 0.7,
+        artist: 0.7,
+        meta: 0.7,
+        rating: 0.8
+      },
+      topK: 50,
+      randomize: false,
+      removeUnderscores: false
+    };
   });
 
-  const [backendConfig, setBackendConfig] = useState<BackendConfig>({
-    type: 'local_hybrid',
-    geminiApiKey: '',
-    ollamaEndpoint: 'https://ollama.gpu.garden',
-    ollamaModel: 'qwen3-vl:30b',
-    taggerEndpoint: 'https://localtagger.gpu.garden/interrogate',
-    enableNaturalLanguage: true
+  useEffect(() => {
+    localStorage.setItem('taggingSettings', JSON.stringify(settings));
+  }, [settings]);
+
+  const [backendConfig, setBackendConfig] = useState<BackendConfig>(() => {
+    const saved = localStorage.getItem('backendConfig');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved backend config", e);
+      }
+    }
+    return {
+      type: 'local_hybrid',
+      geminiApiKey: '',
+      ollamaEndpoint: 'https://ollama.gpu.garden',
+      ollamaModel: 'qwen3-vl:30b',
+      taggerEndpoint: 'https://localtagger.gpu.garden/interrogate',
+      enableNaturalLanguage: true
+    };
   });
+
+  useEffect(() => {
+    localStorage.setItem('backendConfig', JSON.stringify(backendConfig));
+  }, [backendConfig]);
 
   const [error, setError] = useState<string | null>(null);
   const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
