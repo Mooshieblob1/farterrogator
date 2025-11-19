@@ -160,7 +160,7 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig)
     });
 
     if (!response.ok) {
-      throw new Error(`Local Tagger Error: ${response.statusText}`);
+      throw new Error(`Local Tagger Error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
