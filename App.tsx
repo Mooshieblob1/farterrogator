@@ -32,7 +32,7 @@ const App: React.FC = () => {
     geminiApiKey: '',
     ollamaEndpoint: 'https://ollama.gpu.garden',
     ollamaModel: 'qwen2.5-vl',
-    taggerEndpoint: 'http://localtagger.gpu.garden',
+    taggerEndpoint: 'https://localtagger.gpu.garden',
     taggerModel: 'eva',
     enableNaturalLanguage: false
   });
@@ -98,7 +98,7 @@ const App: React.FC = () => {
       // Unified flow for both Gemini and Local Hybrid
       // The logic for consolidation and optional NL is handled inside generateTags
       const interrogationResult = await generateTags(base64, selectedFile.type, backendConfig);
-      
+
       setResult(interrogationResult);
       setLoadingState({ tags: false, description: false });
       setAppState(AppState.SUCCESS);
@@ -127,7 +127,7 @@ const App: React.FC = () => {
       // OR we can implement a smarter flow here if needed.
       // For now, let's stick to the standard generateCaption which does a fresh look.
       // Ideally, we should pass the tags to ensure parity if that's what the user wants.
-      
+
       const caption = await generateCaption(base64, selectedFile.type, backendConfig, result.tags);
       setResult(prev => prev ? { ...prev, naturalDescription: caption } : null);
     } catch (err) {

@@ -97,9 +97,9 @@ const getProxiedOllamaEndpoint = (originalEndpoint: string): string => {
     console.log(`[Proxy] Rewriting Ollama ${originalEndpoint} to Cloudflare Function /ollama`);
     return '/ollama';
   }
-  
+
   return cleanEndpoint;
-};const determineCategory = (name: string): TagCategory => {
+}; const determineCategory = (name: string): TagCategory => {
   // Strict Rating Categorization
   if (name.startsWith('rating:') || ['general', 'safe', 'questionable', 'explicit', 'sensitive', 'nsfw'].includes(name)) {
     return 'rating';
@@ -270,7 +270,7 @@ export const fetchOllamaDescription = async (base64Image: string, config: Backen
   try {
     const response = await fetch(`${proxiedEndpoint}/api/generate`, {
       method: 'POST',
-      headers: { 
+      headers: {
         'Content-Type': 'application/json',
         'Accept': 'application/json'
       },
@@ -344,7 +344,7 @@ const fetchOllamaTagsAndSummary = async (
 
   const proxiedEndpoint = getProxiedOllamaEndpoint(config.ollamaEndpoint);
 
-  const prompt = "Describe this image using a comma-separated list of descriptive tags and a short summary. Format: Tags: tag1, tag2, ... Summary: ...";
+  const prompt = "Describe this image using a comma-separated list of Danbooru-style tags (lowercase, underscores for spaces) and a short summary. Format: Tags: tag1, tag2, ... Summary: ...";
 
   try {
     const response = await fetch(`${proxiedEndpoint}/api/generate`, {
