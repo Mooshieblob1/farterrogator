@@ -157,15 +157,28 @@ export const Results: React.FC<ResultsProps> = ({
             <FileText className="w-4 h-4" />
             Natural Description
           </h3>
-          {result.naturalDescription && !loadingState.description && (
-            <button
-              onClick={handleCopyNatural}
-              className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
-              title="Copy Description"
-            >
-              {copiedNatural ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-            </button>
-          )}
+          <div className="flex gap-2">
+            {result.naturalDescription && !loadingState.description && (
+              <button
+                onClick={() => result.naturalDescription && handleDownloadNai(result.naturalDescription, "_nai_natural.png")}
+                disabled={loadingState.description || !result.naturalDescription || isEmbedding || !selectedFile}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 hover:text-white bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-600 dark:hover:bg-purple-500 rounded-md transition-all border border-purple-200 dark:border-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                title="Download with Natural Description embedded"
+              >
+                {isEmbedding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                NAI Ready
+              </button>
+            )}
+            {result.naturalDescription && !loadingState.description && (
+              <button
+                onClick={handleCopyNatural}
+                className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                title="Copy Description"
+              >
+                {copiedNatural ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+              </button>
+            )}
+          </div>
         </div>
 
         <div className="min-h-[120px] bg-white dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-300 relative">
@@ -233,26 +246,15 @@ export const Results: React.FC<ResultsProps> = ({
               {copiedTags ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               {copiedTags ? 'Copied!' : 'Copy All'}
             </button>
-            <div className="flex gap-2">
-              <button
-                onClick={() => handleDownloadNai(tagString, "_nai_tags.png")}
-                disabled={loadingState.tags || processedTags.length === 0 || isEmbedding || !selectedFile}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:text-white bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-600 dark:hover:bg-blue-500 rounded-md transition-all border border-blue-200 dark:border-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Download with Tags embedded"
-              >
-                {isEmbedding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-                NAI (Tags)
-              </button>
-              <button
-                onClick={() => result.naturalDescription && handleDownloadNai(result.naturalDescription, "_nai_natural.png")}
-                disabled={loadingState.description || !result.naturalDescription || isEmbedding || !selectedFile}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 hover:text-white bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-600 dark:hover:bg-purple-500 rounded-md transition-all border border-purple-200 dark:border-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Download with Natural Description embedded"
-              >
-                {isEmbedding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
-                NAI (Natural)
-              </button>
-            </div>
+            <button
+              onClick={() => handleDownloadNai(tagString, "_nai_tags.png")}
+              disabled={loadingState.tags || processedTags.length === 0 || isEmbedding || !selectedFile}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:text-white bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-600 dark:hover:bg-blue-500 rounded-md transition-all border border-blue-200 dark:border-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Download with Tags embedded"
+            >
+              {isEmbedding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              NAI Ready
+            </button>
           </div>
         </div>
 

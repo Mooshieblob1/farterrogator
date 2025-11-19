@@ -84,14 +84,7 @@ export const embedPngMetadata = async (file: File, prompt: string): Promise<Blob
     createTextChunk('Source', 'NovelAI'),
     createTextChunk('Description', prompt),
     createTextChunk('Comment', JSON.stringify({
-      prompt: prompt,
-      steps: 28,
-      sampler: "Euler a",
-      seed: 0,
-      strength: 0.7,
-      noise: 0.2,
-      scale: 5,
-      uc: "lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry"
+      prompt: prompt
     }))
   ];
 
