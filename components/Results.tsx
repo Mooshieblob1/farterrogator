@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
-import { Copy, Check, Hash, FileText, Tag as TagIcon, Sparkles, Loader2, User, Palette, Layers, Cpu, Shield, Globe } from 'lucide-react';
+import { Copy, Check, Hash, FileText, Tag as TagIcon, Sparkles, Loader2, User, Palette, Layers, Cpu, Shield, Globe, Download } from 'lucide-react';
 import { InterrogationResult, TaggingSettings, Tag, TagCategory, LoadingState } from '../types';
+import { embedPngMetadata } from '../services/pngMetadata';
 
 interface ResultsProps {
   result: InterrogationResult;
@@ -8,6 +9,7 @@ interface ResultsProps {
   onGenerateCaption: () => void; // Kept for backward compatibility or manual re-trigger
   isGeneratingCaption: boolean;
   loadingState: LoadingState;
+  selectedFile: File | null;
 }
 
 export const Results: React.FC<ResultsProps> = ({
@@ -15,10 +17,12 @@ export const Results: React.FC<ResultsProps> = ({
   settings,
   onGenerateCaption,
   isGeneratingCaption,
-  loadingState
+  loadingState,
+  selectedFile
 }) => {
   const [copiedTags, setCopiedTags] = useState(false);
   const [copiedNatural, setCopiedNatural] = useState(false);
+  const [isEmbedding, setIsEmbedding] = useState(false);
 
   const processedTags = useMemo(() => {
     // 1. Filter by Category Thresholds
@@ -63,6 +67,27 @@ export const Results: React.FC<ResultsProps> = ({
       navigator.clipboard.writeText(result.naturalDescription);
       setCopiedNatural(true);
       setTimeout(() => setCopiedNatural(false), 2000);
+    }
+  };
+
+  const handleDownloadNai = async () => {
+    if (!selectedFile) return;
+    setIsEmbedding(true);
+    try {
+      const blob = await embedPngMetadata(selectedFile, tagString);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = selectedFile.name.replace(/\.[^/.]+$/, "") + "_nai_ready.png";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to embed metadata", error);
+      alert("Failed to create NAI ready image.");
+    } finally {
+      setIsEmbedding(false);
     }
   };
 
@@ -111,7 +136,7 @@ export const Results: React.FC<ResultsProps> = ({
           const isMatch = tagsToHighlight.some(t => t.toLowerCase() === part.toLowerCase());
           if (isMatch) {
             return (
-              <span key={i} className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 animate-pulse-slow">
+              <span key={i} className="font-bold text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 animate-pulse-slow">
                 {part}
               </span>
             );
@@ -208,6 +233,15 @@ export const Results: React.FC<ResultsProps> = ({
               {copiedTags ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
               {copiedTags ? 'Copied!' : 'Copy All'}
             </button>
+            <button
+              onClick={handleDownloadNai}
+              disabled={loadingState.tags || processedTags.length === 0 || isEmbedding || !selectedFile}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:text-white bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-600 dark:hover:bg-blue-500 rounded-md transition-all border border-blue-200 dark:border-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              title="Download as NAI Ready PNG"
+            >
+              {isEmbedding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              NAI Ready
+            </button>
           </div>
         </div>
 
@@ -256,7 +290,7 @@ export const Results: React.FC<ResultsProps> = ({
         {/* Raw Text View for Tags (Bottom) */}
         {!loadingState.tags && processedTags.length > 0 && (
           <div className="p-3 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-700 rounded-lg transition-colors duration-300">
-            <p className="text-xs text-slate-500 font-mono break-words line-clamp-2 opacity-70 hover:opacity-100 transition-opacity select-all">
+            <p className="text-xs text-slate-500 font-mono wrap-break-word line-clamp-2 opacity-70 hover:opacity-100 transition-opacity select-all">
               {tagString}
             </p>
           </div>
