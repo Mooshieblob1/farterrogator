@@ -32,7 +32,7 @@ const App: React.FC = () => {
     geminiApiKey: '',
     ollamaEndpoint: 'https://ollama.gpu.garden',
     ollamaModel: 'qwen2.5-vl',
-    taggerEndpoint: 'https://localtagger.gpu.garden/interrogate/pixai',
+    taggerEndpoint: 'https://localtagger.gpu.garden/interrogate',
     taggerModel: 'eva',
     enableNaturalLanguage: false
   });

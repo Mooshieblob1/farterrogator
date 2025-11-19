@@ -137,17 +137,17 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig)
   let endpoint = config.taggerEndpoint;
 
   // Ensure path exists for gpu.garden endpoint
-  if (endpoint.includes('localtagger.gpu.garden') && !endpoint.includes('/interrogate/')) {
-    endpoint = endpoint.replace(/\/$/, '') + '/interrogate/pixai';
+  if (endpoint.includes('localtagger.gpu.garden') && !endpoint.includes('/interrogate')) {
+    endpoint = endpoint.replace(/\/$/, '') + '/interrogate';
   }
 
   if (import.meta.env.DEV && endpoint.includes('localtagger.gpu.garden')) {
     // Remove protocol and domain to get the relative path
     let path = endpoint.replace(/^https?:\/\//, '').replace(/^localtagger\.gpu\.garden/, '');
 
-    // If path is empty or just '/', default to '/interrogate/pixai'
+    // If path is empty or just '/', default to '/interrogate'
     if (!path || path === '/') {
-      path = '/interrogate/pixai';
+      path = '/interrogate';
     } else if (!path.startsWith('/')) {
       path = '/' + path;
     }
