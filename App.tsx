@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, AlertCircle, Wand2 } from 'lucide-react';
+import { Loader2, AlertCircle, Wand2, Sparkles } from 'lucide-react';
 import { Header } from './components/Header';
 import { ImageUpload } from './components/ImageUpload';
 import { ToleranceControl } from './components/ToleranceControl';
@@ -195,51 +195,57 @@ const App: React.FC = () => {
         </div>
 
         {/* Right Column: Output */}
-        {(result || appState === AppState.ERROR) && (
-          <div className="flex-1 flex flex-col min-h-[500px] lg:h-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center gap-3 mb-2">
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Analysis Result</h2>
-              {backendConfig.type !== 'gemini' && (
-                <span className="px-2 py-0.5 text-[10px] font-medium rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 border border-amber-200 dark:border-amber-800/50">
-                  Local Hybrid Mode
-                </span>
-              )}
-            </div>
-
-            <div className="flex-1 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-1 transition-colors duration-300">
-              {appState === AppState.ERROR && (
-                <div className="h-full flex flex-col items-center justify-center text-red-500 dark:text-red-400 p-8 text-center">
-                  <AlertCircle className="w-12 h-12 mb-4 opacity-50" />
-                  <h3 className="text-lg font-bold mb-2">Analysis Failed</h3>
-                  <p className="text-slate-600 dark:text-slate-500 max-w-md">{error}</p>
-                  {backendConfig.type === 'local_hybrid' && (
-                    <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800/50 rounded text-xs text-left">
-                      <p className="font-semibold mb-1">Troubleshooting Local Mode:</p>
-                      <ul className="list-disc list-inside opacity-70 space-y-1">
-                        <li>Ensure Ollama is running at {backendConfig.ollamaEndpoint}</li>
-                        <li>Ensure Local Tagger is running at {backendConfig.taggerEndpoint}</li>
-                        <li>Check CORS headers on both local servers</li>
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {result && (
-                <div className="h-full p-4">
-                  <Results
-                    result={result}
-                    settings={settings}
-                    onGenerateCaption={handleGenerateCaption}
-                    isGeneratingCaption={isGeneratingCaption}
-                    loadingState={loadingState}
-                    selectedFile={selectedFile}
-                  />
-                </div>
-              )}
-            </div>
+        <div className="flex-1 flex flex-col min-h-[500px] lg:h-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
+          <div className="flex items-center gap-3 mb-2">
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Analysis Result</h2>
+            {backendConfig.type !== 'gemini' && (
+              <span className="px-2 py-0.5 text-[10px] font-medium rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 border border-amber-200 dark:border-amber-800/50">
+                Local Hybrid Mode
+              </span>
+            )}
           </div>
-        )}
+
+          <div className="flex-1 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-1 transition-colors duration-300 relative min-h-[500px]">
+            {!result && appState !== AppState.ERROR && (
+              <div className="absolute inset-0 m-2 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
+                <Sparkles className="w-12 h-12 mb-3 opacity-20" />
+                <p className="font-medium opacity-50">Ready to Interrogate</p>
+                <p className="text-sm opacity-30 mt-1">Upload an image to see tags and description</p>
+              </div>
+            )}
+
+            {appState === AppState.ERROR && (
+              <div className="h-full flex flex-col items-center justify-center text-red-500 dark:text-red-400 p-8 text-center">
+                <AlertCircle className="w-12 h-12 mb-4 opacity-50" />
+                <h3 className="text-lg font-bold mb-2">Analysis Failed</h3>
+                <p className="text-slate-600 dark:text-slate-500 max-w-md">{error}</p>
+                {backendConfig.type === 'local_hybrid' && (
+                  <div className="mt-4 p-3 bg-slate-100 dark:bg-slate-800/50 rounded text-xs text-left">
+                    <p className="font-semibold mb-1">Troubleshooting Local Mode:</p>
+                    <ul className="list-disc list-inside opacity-70 space-y-1">
+                      <li>Ensure Ollama is running at {backendConfig.ollamaEndpoint}</li>
+                      <li>Ensure Local Tagger is running at {backendConfig.taggerEndpoint}</li>
+                      <li>Check CORS headers on both local servers</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {result && (
+              <div className="h-full p-4">
+                <Results
+                  result={result}
+                  settings={settings}
+                  onGenerateCaption={handleGenerateCaption}
+                  isGeneratingCaption={isGeneratingCaption}
+                  loadingState={loadingState}
+                  selectedFile={selectedFile}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </main>
     </div>
   );
