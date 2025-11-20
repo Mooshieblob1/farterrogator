@@ -190,7 +190,7 @@ const App: React.FC = () => {
         {/* Left Column: Input */}
         <div className="w-full lg:w-[400px] xl:w-[450px] flex flex-col gap-8 shrink-0">
           <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">Input Image</h2>
+            <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t('upload.inputImage')}</h2>
             <ImageUpload
               onImageSelect={handleImageSelect}
               selectedImage={selectedFile}

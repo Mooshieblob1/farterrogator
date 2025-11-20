@@ -10,6 +10,7 @@
     "nothingYet": "Rien pour l'instant"
   },
   "upload": {
+    "inputImage": "Image d'entrée",
     "dragDrop": "Glissez-déposez une image ici, ou cliquez pour sélectionner",
     "supports": "Supporte PNG, JPG, WEBP, GIF",
     "clear": "Effacer l'image",
@@ -83,7 +84,7 @@
   },
   "info": {
     "title": "Qu'est-ce que Farterrogator ?",
-    "description": "Farterrogator est un outil avancé d'interrogation d'images par IA conçu pour analyser des images et extraire des métadonnées détaillées, des tags et des descriptions en langage naturel. Il aide les artistes, les développeurs et les passionnés à comprendre le contenu de leurs images et à les préparer pour un traitement ultérieur par IA.",
+    "description": "<strong>Farterrogator</strong> est un outil avancé d'interrogation d'images par IA conçu pour analyser des images et extraire des métadonnées détaillées, des tags et des descriptions en langage naturel. Il aide les artistes, les développeurs et les passionnés à comprendre le contenu de leurs images et à les préparer pour un traitement ultérieur par IA.",
     "features": {
       "dualModes": {
         "title": "Modes d'analyse double",

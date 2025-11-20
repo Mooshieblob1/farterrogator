@@ -34,7 +34,12 @@ export const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
         <div className="p-6 space-y-8">
           <section>
             <p className="text-slate-600 dark:text-slate-300 leading-relaxed text-lg">
-              <span className="font-bold text-slate-900 dark:text-slate-100">Farterrogator</span> {t('info.description').replace('Farterrogator ', '')}
+              <Trans 
+                i18nKey="info.description" 
+                components={{ 
+                  strong: <span className="font-bold text-slate-900 dark:text-slate-100" /> 
+                }} 
+              />
             </p>
           </section>
 

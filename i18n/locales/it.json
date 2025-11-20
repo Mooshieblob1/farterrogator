@@ -1,0 +1,121 @@
+{
+  "app": {
+    "title": "Farterrogator",
+    "subtitle": "Interrogatore di Immagini IA",
+    "copyright": "© {{year}} Fartcore. Tutti i diritti riservati."
+  },
+  "header": {
+    "whatIsThis": "Cos'è questo?",
+    "poweredBy": "Alimentato da {{model}}",
+    "nothingYet": "Niente ancora"
+  },
+  "upload": {
+    "inputImage": "Immagine di input",
+    "dragDrop": "Trascina e rilascia un'immagine qui, o clicca per selezionare",
+    "supports": "Supporta PNG, JPG, WEBP, GIF",
+    "clear": "Cancella Immagine",
+    "interrogate": "Interroga"
+  },
+  "results": {
+    "title": "Risultato Analisi",
+    "ready": "Pronto per Interrogare",
+    "readySub": "Carica un'immagine per vedere tag e descrizione",
+    "failed": "Analisi Fallita",
+    "troubleshoot": "Risoluzione problemi Modalità Locale:",
+    "troubleshootOllama": "Assicurati che Ollama sia in esecuzione su {{endpoint}}",
+    "troubleshootTagger": "Assicurati che il Tagger Locale sia in esecuzione su {{endpoint}}",
+    "troubleshootCors": "Controlla le intestazioni CORS su entrambi i server locali",
+    "processing": "Elaborazione...",
+    "analyzing": "Analisi...",
+    "generatingTags": "Generazione tag tecnici...",
+    "descriptionNotGenerated": "Descrizione non generata.",
+    "generateDescription": "Genera Descrizione in Linguaggio Naturale",
+    "technicalTags": "Tag Tecnici",
+    "randomized": "Casuale",
+    "noUnderscores": "Nessun Trattino Basso",
+    "copyAll": "Copia Tutto",
+    "copied": "Copiato!",
+    "naiReady": "Pronto per NAI",
+    "tagsCopied": "Tutti i tag copiati negli appunti!",
+    "descriptionCopied": "Descrizione copiata negli appunti!",
+    "embedFailed": "Impossibile creare immagine pronta per NAI."
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "thresholds": "Soglie",
+    "outputSettings": "Impostazioni Output",
+    "backendSettings": "Impostazioni Backend",
+    "topK": "Top K Tag",
+    "randomize": "Ordine Casuale",
+    "removeUnderscores": "Rimuovi Trattini Bassi",
+    "backendType": "Tipo Backend",
+    "geminiKey": "Chiave API Gemini",
+    "ollamaEndpoint": "Endpoint Ollama",
+    "ollamaModel": "Modello Ollama",
+    "refresh": "Aggiorna",
+    "taggerEndpoint": "Endpoint Tagger Locale",
+    "enableNaturalLanguage": "Abilita Linguaggio Naturale",
+    "naturalLanguageWarning": "(richiederà più tempo)",
+    "simpleMode": "Modalità Semplice",
+    "advancedThresholds": "Soglie Avanzate",
+    "backend": {
+      "provider": "Fornitore",
+      "pixai": "Pixai (Ollama + Tagger)",
+      "gemini": "Google Gemini",
+      "keyStorage": "La chiave è memorizzata solo in memoria.",
+      "pixaiDescription": "Combina perfettamente i risultati del tagger locale con le capacità di ragionamento e sottotitolazione di Ollama.",
+      "ollamaEndpointLabel": "Endpoint Ollama (LLM/Vision)",
+      "ollamaModel": "Modello Ollama"
+    },
+    "categories": {
+      "general": "Generale",
+      "character": "Personaggio",
+      "copyright": "Copyright",
+      "artist": "Artista",
+      "meta": "Meta",
+      "rating": "Valutazione"
+    }
+  },
+  "errors": {
+    "geminiKeyRequired": "La chiave API Gemini è richiesta. Configurala nel pannello impostazioni.",
+    "ollamaRequired": "L'endpoint Ollama è richiesto per la modalità Pixai.",
+    "taggerRequired": "L'endpoint Tagger Locale è richiesto per la modalità Pixai.",
+    "unknown": "Si è verificato un errore sconosciuto"
+  },
+  "info": {
+    "title": "Cos'è Farterrogator?",
+    "description": "<strong>Farterrogator</strong> è uno strumento avanzato di interrogazione immagini IA progettato per analizzare immagini ed estrarre metadati dettagliati, tag e descrizioni in linguaggio naturale. Aiuta artisti, sviluppatori e appassionati a comprendere il contenuto delle loro immagini e prepararle per un'ulteriore elaborazione IA.",
+    "features": {
+      "dualModes": {
+        "title": "Doppia Modalità di Analisi",
+        "description": "Scegli tra <strong>Google Gemini</strong> per un'analisi all'avanguardia basata su cloud, o <strong>Pixai</strong> che combina un Tagger WD1.4 con Ollama (Modelli Vision) ospitato su <strong>gpu.garden</strong>."
+      },
+      "naiReady": {
+        "title": "Incorporamento Pronto per NAI",
+        "description": "Incorpora automaticamente tag o descrizioni generate nei metadati PNG. Le immagini risultanti sono \"Pronte per NAI\" - trascinale semplicemente in NovelAI per autocompilare i prompt con i dati analizzati."
+      },
+      "privacy": {
+        "title": "Privacy e Sicurezza",
+        "description": "In modalità Pixai, le tue immagini vengono elaborate in modo sicuro su <strong>gpu.garden</strong> tramite il <strong>data center Fartcore</strong>. Anche se non vengono eseguite sul tuo dispositivo, i tuoi dati sono trattati con rigorosi standard di privacy."
+      },
+      "gpuGarden": {
+        "title": "Integrazione GPU Garden",
+        "description": "Ottimizzato per l'uso con l'infrastruttura GPU Garden, consentendo un proxy trasparente verso istanze GPU remote per carichi pesanti."
+      }
+    },
+    "howTo": {
+      "title": "Come usare",
+      "step1": "Carica un'immagine o trascinala sulla tela.",
+      "step2": "Seleziona il tuo backend preferito (Gemini o Pixai).",
+      "step3": "Regola le soglie di confidenza per filtrare i tag.",
+      "step4": "Clicca su <strong>Inizia Interrogazione</strong>.",
+      "step5": "Copia i tag o scarica un PNG <strong>Pronto per NAI</strong> da usare nel tuo flusso di lavoro."
+    },
+    "madeBy": "Fatto da"
+  },
+  "theme": {
+    "light": "Modalità Chiara",
+    "auto": "Sistema Auto",
+    "dark": "Modalità Scura"
+  }
+}

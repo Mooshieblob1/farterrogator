@@ -25,7 +25,11 @@ export const LanguageSelector: React.FC = () => {
 
   const languages = [
     { code: 'en', label: 'English' },
-    { code: 'fr', label: 'Français' }
+    { code: 'fr', label: 'Français' },
+    { code: 'es', label: 'Español' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'it', label: 'Italiano' },
+    { code: 'ja', label: '日本語' }
   ];
 
   const currentLang = i18n.language?.split('-')[0] || 'en';

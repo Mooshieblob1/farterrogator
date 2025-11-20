@@ -188,6 +188,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
         onChange={handleFileChange} 
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
         disabled={isProcessing}
+        title={t('upload.dragDrop')}
       />
       
       <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm transition-colors duration-300">

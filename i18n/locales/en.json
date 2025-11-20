@@ -10,6 +10,7 @@
     "nothingYet": "Nothing yet"
   },
   "upload": {
+    "inputImage": "Input Image",
     "dragDrop": "Drag & drop an image here, or click to select",
     "supports": "Supports PNG, JPG, WEBP, GIF",
     "clear": "Clear Image",
@@ -83,7 +84,7 @@
   },
   "info": {
     "title": "What is Farterrogator?",
-    "description": "Farterrogator is an advanced AI image interrogation tool designed to analyze images and extract detailed metadata, tags, and natural language descriptions. It helps artists, developers, and enthusiasts understand the content of their images and prepare them for further AI processing.",
+    "description": "<strong>Farterrogator</strong> is an advanced AI image interrogation tool designed to analyze images and extract detailed metadata, tags, and natural language descriptions. It helps artists, developers, and enthusiasts understand the content of their images and prepare them for further AI processing.",
     "features": {
       "dualModes": {
         "title": "Dual Analysis Modes",
