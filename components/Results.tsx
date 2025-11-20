@@ -171,18 +171,6 @@ export const Results: React.FC<ResultsProps> = ({
           <div className="flex gap-2">
             {result.naturalDescription && !loadingState.description && (
               <button
-                onClick={() => result.naturalDescription && handleDownloadNai(result.naturalDescription, "_nai_natural.png")}
-                disabled={loadingState.description || !result.naturalDescription || isEmbedding || !selectedFile}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 hover:text-white bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-600 dark:hover:bg-purple-500 rounded-md transition-all border border-purple-200 dark:border-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Download with Natural Description embedded"
-                aria-label="Download with Natural Description embedded"
-              >
-                {isEmbedding ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Download className="w-3.5 h-3.5" aria-hidden="true" />}
-                {t('results.naiReady')}
-              </button>
-            )}
-            {result.naturalDescription && !loadingState.description && (
-              <button
                 onClick={handleCopyNatural}
                 className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                 title="Copy Description"
