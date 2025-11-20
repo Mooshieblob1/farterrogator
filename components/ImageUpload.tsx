@@ -146,21 +146,22 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
       <div className="relative group w-fit mx-auto bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors duration-300">
         <img 
           src={previewUrl} 
-          alt="Preview" 
+          alt={t('upload.previewAlt') || "Uploaded image preview"} 
           className="max-w-full max-h-[600px] w-auto h-auto block"
         />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" aria-hidden="true" />
         <button 
           onClick={handleClear}
           className="absolute top-4 right-4 p-2 bg-white/90 dark:bg-slate-900/80 text-slate-600 dark:text-slate-200 rounded-full hover:bg-red-50 hover:text-red-500 dark:hover:bg-red-500/20 dark:hover:text-red-400 transition-colors border border-slate-200 dark:border-slate-700 backdrop-blur-sm opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-200"
           title={t('upload.clear')}
+          aria-label={t('upload.clear')}
         >
-          <X className="w-5 h-5" />
+          <X className="w-5 h-5" aria-hidden="true" />
         </button>
         {isProcessing && (
-           <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-20">
+           <div className="absolute inset-0 flex items-center justify-center bg-black/50 backdrop-blur-sm z-20" role="status" aria-live="polite">
               <div className="flex flex-col items-center gap-2 text-white">
-                <Loader2 className="w-8 h-8 animate-spin" />
+                <Loader2 className="w-8 h-8 animate-spin" aria-hidden="true" />
                 <span className="text-sm font-medium">{t('results.processing')}</span>
               </div>
            </div>
@@ -181,6 +182,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
+      role="button"
+      tabIndex={0}
+      aria-label={t('upload.dragDrop')}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          document.querySelector<HTMLInputElement>('input[type="file"]')?.click();
+        }
+      }}
     >
       <input 
         type="file" 
@@ -189,9 +199,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
         disabled={isProcessing}
         title={t('upload.dragDrop')}
+        aria-label={t('upload.dragDrop')}
+        tabIndex={-1} // The parent div handles focus
       />
       
-      <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm transition-colors duration-300">
+      <div className="p-4 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm transition-colors duration-300" aria-hidden="true">
         {isProcessing ? (
           <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
         ) : (

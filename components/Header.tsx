@@ -50,8 +50,9 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme, backendConfig }
         <button
           onClick={() => setIsModalOpen(true)}
           className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition-colors text-sm font-medium"
+          aria-label={t('header.whatIsThis')}
         >
-          <HelpCircle className="w-4 h-4" />
+          <HelpCircle className="w-4 h-4" aria-hidden="true" />
           {t('header.whatIsThis')}
         </button>
 
@@ -62,16 +63,17 @@ export const Header: React.FC<HeaderProps> = ({ theme, setTheme, backendConfig }
             rel="noopener noreferrer"
             className="group relative p-px rounded-full bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 bg-[length:200%_200%] animate-gradient-xy shadow-[0_0_15px_rgba(168,85,247,0.4)] hover:shadow-[0_0_25px_rgba(168,85,247,0.7)] transition-all active:scale-95"
             title="GPU Garden"
+            aria-label="GPU Garden"
           >
             <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-slate-900 group-hover:bg-slate-50 dark:group-hover:bg-slate-800 transition-colors">
-              <img src="https://gpu.garden/favicon.png" alt="GPU Garden" className="w-6 h-6" />
+              <img src="https://gpu.garden/favicon.png" alt="" className="w-6 h-6" aria-hidden="true" />
               <span className="text-sm font-bold bg-clip-text text-transparent bg-linear-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">
                 gpu.garden
               </span>
             </div>
           </a>
           <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-slate-100 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700">
-            <Sparkles className="w-3 h-3 text-red-500 dark:text-red-400" />
+            <Sparkles className="w-3 h-3 text-red-500 dark:text-red-400" aria-hidden="true" />
             <span className="text-xs text-slate-600 dark:text-slate-400">{t('header.poweredBy', { model: modelDisplay })}</span>
           </div>
           <LanguageSelector />

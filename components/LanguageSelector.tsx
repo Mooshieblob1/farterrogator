@@ -52,16 +52,24 @@ export const LanguageSelector: React.FC = () => {
             : 'border-transparent hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'
         }`}
         title="Change Language"
+        aria-label="Change Language"
+        aria-haspopup="true"
+        aria-expanded={isOpen}
       >
-        <Languages className="w-4 h-4" />
+        <Languages className="w-4 h-4" aria-hidden="true" />
         <span className="text-sm font-medium uppercase">{displayLang}</span>
       </button>
       
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 w-36 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
+        <div 
+          className="absolute right-0 top-full mt-2 w-36 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 animate-in fade-in zoom-in-95 duration-100"
+          role="menu"
+          aria-orientation="vertical"
+          aria-label="Language selection"
+        >
           {languages.map((lang) => (
             lang.code === 'divider' ? (
-              <div key="divider" className="h-px bg-slate-200 dark:bg-slate-700 my-1 mx-2" />
+              <div key="divider" className="h-px bg-slate-200 dark:bg-slate-700 my-1 mx-2" role="separator" />
             ) : (
               <button 
                 key={lang.code}
@@ -71,9 +79,11 @@ export const LanguageSelector: React.FC = () => {
                     ? 'text-red-600 dark:text-red-500 font-medium bg-red-50/50 dark:bg-red-900/10' 
                     : 'text-slate-600 dark:text-slate-400'
                 }`}
+                role="menuitem"
+                aria-current={currentLang === lang.code ? 'true' : undefined}
               >
                 {lang.label}
-                {currentLang === lang.code && <Check className="w-3.5 h-3.5" />}
+                {currentLang === lang.code && <Check className="w-3.5 h-3.5" aria-hidden="true" />}
               </button>
             )
           ))}

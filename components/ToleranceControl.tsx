@@ -99,25 +99,30 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="w-full p-4 flex items-center justify-between bg-slate-50/50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+        aria-expanded={isExpanded}
+        aria-controls="settings-content"
       >
         <div className="flex items-center gap-2 text-slate-700 dark:text-slate-200 font-medium">
-          <Settings2 className="w-4 h-4 text-red-600 dark:text-red-400" />
+          <Settings2 className="w-4 h-4 text-red-600 dark:text-red-400" aria-hidden="true" />
           <span>{t('settings.title')}</span>
         </div>
-        {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+        {isExpanded ? <ChevronUp className="w-4 h-4 text-slate-400" aria-hidden="true" /> : <ChevronDown className="w-4 h-4 text-slate-400" aria-hidden="true" />}
       </button>
 
       {isExpanded && (
-        <div className="p-4 animate-in slide-in-from-top-2 duration-200">
+        <div id="settings-content" className="p-4 animate-in slide-in-from-top-2 duration-200">
 
           {/* Tabs */}
-          <div className="flex p-1 mb-4 bg-slate-100 dark:bg-slate-800 rounded-lg">
+          <div className="flex p-1 mb-4 bg-slate-100 dark:bg-slate-800 rounded-lg" role="tablist">
             <button
               onClick={() => setActiveTab('tags')}
               className={`flex-1 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === 'tags'
                   ? 'bg-white dark:bg-slate-600 text-red-600 dark:text-red-300 shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
                 }`}
+              role="tab"
+              aria-selected={activeTab === 'tags'}
+              aria-controls="tab-tags"
             >
               {t('settings.outputSettings')}
             </button>
@@ -127,19 +132,22 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                   ? 'bg-white dark:bg-slate-600 text-red-600 dark:text-red-300 shadow-sm'
                   : 'text-slate-500 dark:text-slate-400 hover:text-slate-700'
                 }`}
+              role="tab"
+              aria-selected={activeTab === 'backend'}
+              aria-controls="tab-backend"
             >
               {t('settings.backendSettings')}
             </button>
           </div>
 
           {activeTab === 'tags' ? (
-            <div className="space-y-6">
+            <div id="tab-tags" role="tabpanel" className="space-y-6">
               {/* Output Options */}
               <div className="space-y-3">
                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('settings.outputSettings')}</label>
 
                 <div className="flex items-center justify-between gap-4">
-                  <span className="text-sm text-slate-700 dark:text-slate-300">{t('settings.topK')}</span>
+                  <span id="top-k-label" className="text-sm text-slate-700 dark:text-slate-300">{t('settings.topK')}</span>
                   <div className="flex items-center gap-2">
                     <input
                       type="range"
@@ -148,6 +156,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                       onChange={(e) => onSettingsChange({ ...settings, topK: parseInt(e.target.value) })}
                       disabled={disabled}
                       className="w-24 h-1 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:bg-red-600 [&::-webkit-slider-thumb]:rounded-full"
+                      aria-labelledby="top-k-label"
                     />
                     <span className="w-8 text-right text-xs font-mono text-slate-600 dark:text-slate-400">{settings.topK}</span>
                   </div>
@@ -155,13 +164,16 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    {settings.randomize ? <Shuffle className="w-4 h-4 text-red-500" /> : <SortAsc className="w-4 h-4 text-slate-400" />}
-                    <span className="text-sm text-slate-700 dark:text-slate-300">{t('settings.randomize')}</span>
+                    {settings.randomize ? <Shuffle className="w-4 h-4 text-red-500" aria-hidden="true" /> : <SortAsc className="w-4 h-4 text-slate-400" aria-hidden="true" />}
+                    <span id="randomize-label" className="text-sm text-slate-700 dark:text-slate-300">{t('settings.randomize')}</span>
                   </div>
                   <button
                     onClick={() => onSettingsChange({ ...settings, randomize: !settings.randomize })}
                     disabled={disabled}
                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${settings.randomize ? 'bg-red-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+                    role="switch"
+                    aria-checked={settings.randomize}
+                    aria-labelledby="randomize-label"
                   >
                     <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${settings.randomize ? 'translate-x-5' : 'translate-x-1'}`} />
                   </button>
@@ -169,13 +181,16 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
 
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Type className={`w-4 h-4 ${settings.removeUnderscores ? 'text-red-500' : 'text-slate-400'}`} />
-                    <span className="text-sm text-slate-700 dark:text-slate-300">{t('settings.removeUnderscores')}</span>
+                    <Type className={`w-4 h-4 ${settings.removeUnderscores ? 'text-red-500' : 'text-slate-400'}`} aria-hidden="true" />
+                    <span id="underscores-label" className="text-sm text-slate-700 dark:text-slate-300">{t('settings.removeUnderscores')}</span>
                   </div>
                   <button
                     onClick={() => onSettingsChange({ ...settings, removeUnderscores: !settings.removeUnderscores })}
                     disabled={disabled}
                     className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${settings.removeUnderscores ? 'bg-red-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+                    role="switch"
+                    aria-checked={settings.removeUnderscores}
+                    aria-labelledby="underscores-label"
                   >
                     <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${settings.removeUnderscores ? 'translate-x-5' : 'translate-x-1'}`} />
                   </button>
@@ -184,8 +199,8 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                 {backendConfig.type === 'local_hybrid' && (
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <Type className={`w-4 h-4 ${backendConfig.enableNaturalLanguage ? 'text-red-500' : 'text-slate-400'}`} />
-                      <span className="text-sm text-slate-700 dark:text-slate-300">
+                      <Type className={`w-4 h-4 ${backendConfig.enableNaturalLanguage ? 'text-red-500' : 'text-slate-400'}`} aria-hidden="true" />
+                      <span id="natural-lang-label" className="text-sm text-slate-700 dark:text-slate-300">
                         {t('settings.enableNaturalLanguage')} <span className="text-xs text-slate-500 dark:text-slate-400">{t('settings.naturalLanguageWarning')}</span>
                       </span>
                     </div>
@@ -193,6 +208,9 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                       onClick={() => onBackendChange({ ...backendConfig, enableNaturalLanguage: !backendConfig.enableNaturalLanguage })}
                       disabled={disabled}
                       className={`relative inline-flex h-5 w-9 items-center rounded-full transition-colors focus:outline-none ${backendConfig.enableNaturalLanguage ? 'bg-red-600' : 'bg-slate-200 dark:bg-slate-700'}`}
+                      role="switch"
+                      aria-checked={backendConfig.enableNaturalLanguage}
+                      aria-labelledby="natural-lang-label"
                     >
                       <span className={`inline-block h-3 w-3 transform rounded-full bg-white transition-transform ${backendConfig.enableNaturalLanguage ? 'translate-x-5' : 'translate-x-1'}`} />
                     </button>
@@ -200,7 +218,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                 )}
               </div>
 
-              <div className="h-px bg-slate-200 dark:bg-slate-700" />
+              <div className="h-px bg-slate-200 dark:bg-slate-700" role="separator" />
 
               {/* Thresholds */}
               <div className="space-y-3">
@@ -211,6 +229,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                   <button
                     onClick={() => setIsAdvanced(!isAdvanced)}
                     className="text-[10px] text-blue-500 hover:text-blue-600 font-medium"
+                    aria-pressed={isAdvanced}
                   >
                     {isAdvanced ? t('settings.simpleMode') : t('settings.advancedThresholds')}
                   </button>
@@ -220,8 +239,8 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                   {!isAdvanced ? (
                     <div className="space-y-1">
                       <div className="flex justify-between text-xs">
-                        <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300">
-                          <Layers className="w-3 h-3" />
+                        <div className="flex items-center gap-1.5 font-medium text-slate-700 dark:text-slate-300" id="general-threshold-label">
+                          <Layers className="w-3 h-3" aria-hidden="true" />
                           {t('settings.categories.general')}
                         </div>
                         <span className="font-mono text-slate-500 dark:text-slate-400">
@@ -237,6 +256,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                         onChange={(e) => updateOverallThreshold(parseFloat(e.target.value))}
                         disabled={disabled}
                         className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-red-600 [&::-webkit-slider-thumb]:rounded-full"
+                        aria-labelledby="general-threshold-label"
                       />
                     </div>
                   ) : (
@@ -244,7 +264,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                       .map(cat => (
                         <div key={cat.id} className="space-y-1">
                           <div className="flex justify-between text-xs">
-                            <div className={`flex items-center gap-1.5 font-medium ${cat.color}`}>
+                            <div className={`flex items-center gap-1.5 font-medium ${cat.color}`} id={`threshold-label-${cat.id}`}>
                               {cat.icon}
                               {cat.label}
                             </div>
@@ -261,6 +281,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                             onChange={(e) => updateThreshold(cat.id, parseFloat(e.target.value))}
                             disabled={disabled}
                             className="w-full h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3.5 [&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-red-600 [&::-webkit-slider-thumb]:rounded-full"
+                            aria-labelledby={`threshold-label-${cat.id}`}
                           />
                         </div>
                       ))
@@ -269,11 +290,11 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
               </div>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div id="tab-backend" role="tabpanel" className="space-y-4">
               {/* Backend Selection */}
               <div className="space-y-2">
                 <label className="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">{t('settings.backend.provider')}</label>
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t('settings.backend.provider')}>
                   {(['gemini', 'local_hybrid'] as BackendType[]).map((type) => (
                     <button
                       key={type}
@@ -282,9 +303,11 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                           ? 'bg-red-50 dark:bg-red-900/30 border-red-200 dark:border-red-500 text-red-700 dark:text-red-300'
                           : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-red-200 dark:hover:border-red-500/50'
                         }`}
+                      role="radio"
+                      aria-checked={backendConfig.type === type}
                     >
-                      {type === 'gemini' && <Globe className="w-4 h-4" />}
-                      {type === 'local_hybrid' && <Server className="w-4 h-4" />}
+                      {type === 'gemini' && <Globe className="w-4 h-4" aria-hidden="true" />}
+                      {type === 'local_hybrid' && <Server className="w-4 h-4" aria-hidden="true" />}
                       {type === 'local_hybrid' ? t('settings.backend.pixai') : t('settings.backend.gemini')}
                     </button>
                   ))}
@@ -294,16 +317,17 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
               {backendConfig.type === 'gemini' && (
                 <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-1">
                   <div className="space-y-1">
-                    <label className="text-xs text-slate-500">{t('settings.geminiKey')}</label>
+                    <label htmlFor="gemini-api-key" className="text-xs text-slate-500">{t('settings.geminiKey')}</label>
                     <div className="relative">
                       <input
+                        id="gemini-api-key"
                         type="password"
                         value={backendConfig.geminiApiKey}
                         onChange={(e) => onBackendChange({ ...backendConfig, geminiApiKey: e.target.value })}
                         className="w-full text-sm pl-8 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-red-500 outline-none transition-all font-mono"
                         placeholder="AIza..."
                       />
-                      <Key className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" />
+                      <Key className="w-4 h-4 text-slate-400 absolute left-2.5 top-2.5" aria-hidden="true" />
                     </div>
                     <p className="text-[10px] text-slate-400">{t('settings.backend.keyStorage')}</p>
                   </div>
@@ -316,8 +340,9 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                     {t('settings.backend.pixaiDescription')}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-slate-500">{t('settings.backend.ollamaEndpointLabel')}</label>
+                    <label htmlFor="ollama-endpoint" className="text-xs text-slate-500">{t('settings.backend.ollamaEndpointLabel')}</label>
                     <input
+                      id="ollama-endpoint"
                       type="text"
                       value={backendConfig.ollamaEndpoint}
                       onChange={(e) => onBackendChange({ ...backendConfig, ollamaEndpoint: e.target.value })}
@@ -327,13 +352,14 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                   </div>
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs text-slate-500">{t('settings.backend.ollamaModel')}</label>
+                      <label htmlFor="ollama-model" className="text-xs text-slate-500">{t('settings.backend.ollamaModel')}</label>
                       <button
                         onClick={handleFetchModels}
                         disabled={isLoadingModels}
                         className="text-[10px] text-blue-500 hover:text-blue-600 flex items-center gap-1"
+                        aria-label={t('settings.refresh')}
                       >
-                        <RefreshCw className={`w-3 h-3 ${isLoadingModels ? 'animate-spin' : ''}`} />
+                        <RefreshCw className={`w-3 h-3 ${isLoadingModels ? 'animate-spin' : ''}`} aria-hidden="true" />
                         {t('settings.refresh')}
                       </button>
                     </div>
@@ -341,6 +367,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                     {availableModels.length > 0 ? (
                       <div className="relative">
                         <select
+                          id="ollama-model"
                           value={backendConfig.ollamaModel}
                           onChange={(e) => onBackendChange({ ...backendConfig, ollamaModel: e.target.value })}
                           className="w-full text-sm px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-red-500 outline-none transition-all appearance-none"
@@ -349,10 +376,11 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                             <option key={model} value={model}>{model}</option>
                           ))}
                         </select>
-                        <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" />
+                        <ChevronDown className="w-4 h-4 text-slate-400 absolute right-2.5 top-2.5 pointer-events-none" aria-hidden="true" />
                       </div>
                     ) : (
                       <input
+                        id="ollama-model"
                         type="text"
                         value={backendConfig.ollamaModel}
                         onChange={(e) => onBackendChange({ ...backendConfig, ollamaModel: e.target.value })}
@@ -362,8 +390,9 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                     )}
                   </div>
                   <div className="space-y-1">
-                    <label className="text-xs text-slate-500">Local Tagger Endpoint (WD1.4)</label>
+                    <label htmlFor="tagger-endpoint" className="text-xs text-slate-500">Local Tagger Endpoint (WD1.4)</label>
                     <input
+                      id="tagger-endpoint"
                       type="text"
                       value={backendConfig.taggerEndpoint}
                       onChange={(e) => onBackendChange({ ...backendConfig, taggerEndpoint: e.target.value })}

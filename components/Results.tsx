@@ -165,7 +165,7 @@ export const Results: React.FC<ResultsProps> = ({
       <div className="flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-            <FileText className="w-4 h-4" />
+            <FileText className="w-4 h-4" aria-hidden="true" />
             {t('results.naturalDescription')}
           </h3>
           <div className="flex gap-2">
@@ -175,8 +175,9 @@ export const Results: React.FC<ResultsProps> = ({
                 disabled={loadingState.description || !result.naturalDescription || isEmbedding || !selectedFile}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-purple-700 dark:text-purple-300 hover:text-white bg-purple-50 dark:bg-purple-500/10 hover:bg-purple-600 dark:hover:bg-purple-500 rounded-md transition-all border border-purple-200 dark:border-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Download with Natural Description embedded"
+                aria-label="Download with Natural Description embedded"
               >
-                {isEmbedding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+                {isEmbedding ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Download className="w-3.5 h-3.5" aria-hidden="true" />}
                 NAI Ready
               </button>
             )}
@@ -185,8 +186,9 @@ export const Results: React.FC<ResultsProps> = ({
                 onClick={handleCopyNatural}
                 className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
                 title="Copy Description"
+                aria-label="Copy Description"
               >
-                {copiedNatural ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
+                {copiedNatural ? <Check className="w-4 h-4 text-green-500" aria-hidden="true" /> : <Copy className="w-4 h-4" aria-hidden="true" />}
               </button>
             )}
           </div>
@@ -194,21 +196,21 @@ export const Results: React.FC<ResultsProps> = ({
 
         <div className="min-h-[120px] bg-white dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700 p-6 transition-colors duration-300 relative">
           {isGeneratingCaption || loadingState.description ? (
-            <div className="flex flex-col items-center justify-center h-full space-y-4 py-4">
+            <div className="flex flex-col items-center justify-center h-full space-y-4 py-4" role="status" aria-live="polite">
               <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400">
-                <Loader2 className="w-6 h-6 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />
                 <span className="text-sm font-medium animate-pulse">Generating natural language description...</span>
               </div>
-              <div className="w-full max-w-xs space-y-2 opacity-50">
+              <div className="w-full max-w-xs space-y-2 opacity-50" aria-hidden="true">
                 <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full w-full animate-pulse"></div>
                 <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full w-5/6 animate-pulse"></div>
                 <div className="h-2 bg-slate-200 dark:bg-slate-700 rounded-full w-4/5 animate-pulse"></div>
               </div>
             </div>
           ) : loadingState.tags ? (
-            <div className="flex flex-col items-center justify-center h-full space-y-4 py-4">
+            <div className="flex flex-col items-center justify-center h-full space-y-4 py-4" role="status" aria-live="polite">
               <div className="flex items-center gap-3 text-blue-600 dark:text-blue-400">
-                <Loader2 className="w-6 h-6 animate-spin" />
+                <Loader2 className="w-6 h-6 animate-spin" aria-hidden="true" />
                 <span className="text-sm font-medium animate-pulse">{loadingState.status || 'Analyzing...'}</span>
               </div>
             </div>
@@ -223,7 +225,7 @@ export const Results: React.FC<ResultsProps> = ({
                   disabled={isGeneratingCaption}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-100 dark:hover:bg-blue-900/40 transition-colors text-xs font-medium border border-blue-200 dark:border-blue-800/50 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Sparkles className="w-3.5 h-3.5" aria-hidden="true" />
                   {t('results.generateDescription')}
                 </button>
               )}
@@ -236,7 +238,7 @@ export const Results: React.FC<ResultsProps> = ({
       <div className="flex flex-col gap-2 flex-1">
         <div className="flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 uppercase tracking-wider flex items-center gap-2">
-            <Hash className="w-4 h-4" />
+            <Hash className="w-4 h-4" aria-hidden="true" />
             {t('results.technicalTags')}
             <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full text-xs font-normal text-slate-500">
               {loadingState.tags ? '...' : processedTags.length}
@@ -260,8 +262,9 @@ export const Results: React.FC<ResultsProps> = ({
               onClick={handleCopyTags}
               disabled={loadingState.tags || processedTags.length === 0}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-red-700 dark:text-red-300 hover:text-white bg-red-50 dark:bg-red-500/10 hover:bg-red-600 dark:hover:bg-red-500 rounded-md transition-all border border-red-200 dark:border-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label={copiedTags ? t('results.copied') : t('results.copyAll')}
             >
-              {copiedTags ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              {copiedTags ? <Check className="w-3.5 h-3.5" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
               {copiedTags ? t('results.copied') : t('results.copyAll')}
             </button>
             <button
@@ -269,8 +272,9 @@ export const Results: React.FC<ResultsProps> = ({
               disabled={loadingState.tags || processedTags.length === 0 || isEmbedding || !selectedFile}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-blue-700 dark:text-blue-300 hover:text-white bg-blue-50 dark:bg-blue-500/10 hover:bg-blue-600 dark:hover:bg-blue-500 rounded-md transition-all border border-blue-200 dark:border-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               title="Download with Tags embedded"
+              aria-label="Download with Tags embedded"
             >
-              {isEmbedding ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Download className="w-3.5 h-3.5" />}
+              {isEmbedding ? <Loader2 className="w-3.5 h-3.5 animate-spin" aria-hidden="true" /> : <Download className="w-3.5 h-3.5" aria-hidden="true" />}
               {t('results.naiReady')}
             </button>
           </div>
@@ -278,7 +282,7 @@ export const Results: React.FC<ResultsProps> = ({
 
         <div className="flex-1 min-h-[200px] bg-white dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700 p-4 transition-colors duration-300 relative">
           {loadingState.tags ? (
-            <div className="flex flex-col items-center justify-center h-full space-y-6 py-8">
+            <div className="flex flex-col items-center justify-center h-full space-y-6 py-8" role="status" aria-live="polite">
               <div className="w-full max-w-md space-y-2">
                 <div className="flex justify-between text-xs font-medium text-slate-500 dark:text-slate-400">
                   <span>{loadingState.status || 'Processing...'}</span>
@@ -293,7 +297,7 @@ export const Results: React.FC<ResultsProps> = ({
                   </div>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2 animate-pulse opacity-30 justify-center max-w-lg blur-[1px]">
+              <div className="flex flex-wrap gap-2 animate-pulse opacity-30 justify-center max-w-lg blur-[1px]" aria-hidden="true">
                 {[...Array(12)].map((_, i) => (
                   <div key={i} className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
                 ))}
@@ -302,7 +306,7 @@ export const Results: React.FC<ResultsProps> = ({
           ) : (
             <div className="flex flex-wrap gap-2">
               {processedTags.map((tag, idx) =>
-                <span
+                <button
                   key={tag.name}
                   onClick={() => {
                     navigator.clipboard.writeText(formatTag(tag.name));
@@ -315,18 +319,19 @@ export const Results: React.FC<ResultsProps> = ({
                       ${tag.source === 'both' ? 'ring-1 ring-offset-1 ring-offset-white dark:ring-offset-slate-900 ring-blue-400/50' : ''}
                     `}
                   title={`Score: ${(tag.score * 100).toFixed(0)}% | Source: ${tag.source || 'local'}`}
+                  aria-label={`${formatTag(tag.name)}, Score: ${(tag.score * 100).toFixed(0)}%, Source: ${tag.source || 'local'}`}
                 >
-                  <span className="opacity-50">{getCategoryIcon(tag.category)}</span>
+                  <span className="opacity-50" aria-hidden="true">{getCategoryIcon(tag.category)}</span>
                   <span className="font-mono font-medium">{formatTag(tag.name)}</span>
-                  <span className="ml-1 text-[10px] font-bold opacity-60 group-hover:opacity-100 bg-black/10 dark:bg-black/20 px-1.5 py-0.5 rounded">
+                  <span className="ml-1 text-[10px] font-bold opacity-60 group-hover:opacity-100 bg-black/10 dark:bg-black/20 px-1.5 py-0.5 rounded" aria-hidden="true">
                     {tag.score.toFixed(2)}
                   </span>
-                  {tag.source === 'ollama' && <span className="text-[10px] opacity-60 ml-0.5">(AI)</span>}
-                </span>
+                  {tag.source === 'ollama' && <span className="text-[10px] opacity-60 ml-0.5" aria-hidden="true">(AI)</span>}
+                </button>
               )}
               {processedTags.length === 0 && (
                 <div className="w-full text-center py-12 text-slate-400 dark:text-slate-500">
-                  <TagIcon className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                  <TagIcon className="w-12 h-12 mx-auto mb-3 opacity-20" aria-hidden="true" />
                   <p>No tags found.</p>
                 </div>
               )}
@@ -345,9 +350,9 @@ export const Results: React.FC<ResultsProps> = ({
       </div>
 
       {toastMessage && createPortal(
-        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-200">
+        <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 animate-in fade-in slide-in-from-bottom-4 duration-200" role="status" aria-live="polite">
           <div className="bg-slate-900/90 dark:bg-white/90 text-white dark:text-slate-900 px-4 py-2 rounded-full shadow-lg backdrop-blur-sm flex items-center gap-2 text-sm font-medium">
-            <Check className="w-4 h-4 text-green-500 dark:text-green-600" />
+            <Check className="w-4 h-4 text-green-500 dark:text-green-600" aria-hidden="true" />
             {toastMessage}
           </div>
         </div>,

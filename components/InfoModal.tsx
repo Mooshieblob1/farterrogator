@@ -13,21 +13,28 @@ export const InfoModal: React.FC<InfoModalProps> = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300" onClick={onClose}>
+    <div 
+      className="fixed inset-0 z-100 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-300" 
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="info-modal-title"
+    >
       <div 
         className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-slate-200 dark:border-slate-800 animate-in zoom-in-50 duration-300"
         onClick={e => e.stopPropagation()}
       >
         <div className="sticky top-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between z-10">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
-            <HelpCircle className="w-6 h-6 text-red-500" />
+          <h2 id="info-modal-title" className="text-xl font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <HelpCircle className="w-6 h-6 text-red-500" aria-hidden="true" />
             {t('info.title')}
           </h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+            aria-label={t('common.close') || "Close"}
           >
-            <X className="w-5 h-5 text-slate-500" />
+            <X className="w-5 h-5 text-slate-500" aria-hidden="true" />
           </button>
         </div>
 

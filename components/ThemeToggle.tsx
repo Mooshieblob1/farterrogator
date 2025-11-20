@@ -11,7 +11,7 @@ interface ThemeToggleProps {
 export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, setTheme }) => {
   const { t } = useTranslation();
   return (
-    <div className="flex items-center p-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+    <div className="flex items-center p-1 rounded-full bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700" role="group" aria-label={t('theme.label') || "Theme selection"}>
       <button
         onClick={() => setTheme('light')}
         className={`p-1.5 rounded-full transition-all ${
@@ -20,8 +20,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, setTheme }) => 
             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
         }`}
         title={t('theme.light')}
+        aria-label={t('theme.light')}
+        aria-pressed={theme === 'light'}
       >
-        <Sun className="w-4 h-4" />
+        <Sun className="w-4 h-4" aria-hidden="true" />
       </button>
       <button
         onClick={() => setTheme('auto')}
@@ -31,8 +33,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, setTheme }) => 
             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
         }`}
         title={t('theme.auto')}
+        aria-label={t('theme.auto')}
+        aria-pressed={theme === 'auto'}
       >
-        <Monitor className="w-4 h-4" />
+        <Monitor className="w-4 h-4" aria-hidden="true" />
       </button>
       <button
         onClick={() => setTheme('dark')}
@@ -42,8 +46,10 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ theme, setTheme }) => 
             : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
         }`}
         title={t('theme.dark')}
+        aria-label={t('theme.dark')}
+        aria-pressed={theme === 'dark'}
       >
-        <Moon className="w-4 h-4" />
+        <Moon className="w-4 h-4" aria-hidden="true" />
       </button>
     </div>
   );
