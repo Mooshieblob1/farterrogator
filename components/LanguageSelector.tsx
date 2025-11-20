@@ -29,7 +29,10 @@ export const LanguageSelector: React.FC = () => {
     { code: 'es', label: 'Español' },
     { code: 'de', label: 'Deutsch' },
     { code: 'it', label: 'Italiano' },
-    { code: 'ja', label: '日本語' }
+    { code: 'ja', label: '日本語' },
+    { code: 'ru', label: 'Русский' },
+    { code: 'pt', label: 'Português' },
+    { code: 'ko', label: '한국어' }
   ];
 
   const currentLang = i18n.language?.split('-')[0] || 'en';

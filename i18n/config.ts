@@ -8,6 +8,9 @@ import es from './locales/es.json';
 import de from './locales/de.json';
 import it from './locales/it.json';
 import ja from './locales/ja.json';
+import ru from './locales/ru.json';
+import pt from './locales/pt.json';
+import ko from './locales/ko.json';
 
 i18n
   .use(LanguageDetector)
@@ -19,7 +22,10 @@ i18n
       es: { translation: es },
       de: { translation: de },
       it: { translation: it },
-      ja: { translation: ja }
+      ja: { translation: ja },
+      ru: { translation: ru },
+      pt: { translation: pt },
+      ko: { translation: ko }
     },
     fallbackLng: 'en',
     interpolation: {

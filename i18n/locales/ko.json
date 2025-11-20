@@ -1,0 +1,121 @@
+{
+  "app": {
+    "title": "Farterrogator",
+    "subtitle": "AI 이미지 심문기",
+    "copyright": "© {{year}} Fartcore. 모든 권리 보유."
+  },
+  "header": {
+    "whatIsThis": "이게 뭔가요?",
+    "poweredBy": "{{model}} 구동",
+    "nothingYet": "아직 없음"
+  },
+  "upload": {
+    "inputImage": "입력 이미지",
+    "dragDrop": "이미지를 이곳에 드래그 앤 드롭하거나 클릭하여 선택하세요",
+    "supports": "PNG, JPG, WEBP, GIF 지원",
+    "clear": "이미지 지우기",
+    "interrogate": "심문하기"
+  },
+  "results": {
+    "title": "분석 결과",
+    "ready": "심문 준비 완료",
+    "readySub": "태그와 설명을 보려면 이미지를 업로드하세요",
+    "failed": "분석 실패",
+    "troubleshoot": "로컬 모드 문제 해결:",
+    "troubleshootOllama": "Ollama가 {{endpoint}}에서 실행 중인지 확인하세요",
+    "troubleshootTagger": "로컬 태거가 {{endpoint}}에서 실행 중인지 확인하세요",
+    "troubleshootCors": "두 로컬 서버의 CORS 헤더를 확인하세요",
+    "processing": "처리 중...",
+    "analyzing": "분석 중...",
+    "generatingTags": "기술 태그 생성 중...",
+    "descriptionNotGenerated": "설명이 생성되지 않았습니다.",
+    "generateDescription": "자연어 설명 생성",
+    "technicalTags": "기술 태그",
+    "randomized": "무작위",
+    "noUnderscores": "밑줄 제거",
+    "copyAll": "모두 복사",
+    "copied": "복사됨!",
+    "naiReady": "NAI 준비됨",
+    "tagsCopied": "모든 태그가 클립보드에 복사되었습니다!",
+    "descriptionCopied": "설명이 클립보드에 복사되었습니다!",
+    "embedFailed": "NAI 준비 이미지를 생성하지 못했습니다."
+  },
+  "settings": {
+    "title": "설정",
+    "thresholds": "임계값",
+    "outputSettings": "출력 설정",
+    "backendSettings": "백엔드 설정",
+    "topK": "상위 K 태그",
+    "randomize": "순서 무작위화",
+    "removeUnderscores": "밑줄 제거",
+    "backendType": "백엔드 유형",
+    "geminiKey": "Gemini API 키",
+    "ollamaEndpoint": "Ollama 엔드포인트",
+    "ollamaModel": "Ollama 모델",
+    "refresh": "새로고침",
+    "taggerEndpoint": "로컬 태거 엔드포인트",
+    "enableNaturalLanguage": "자연어 사용",
+    "naturalLanguageWarning": "(시간이 더 걸립니다)",
+    "simpleMode": "간편 모드",
+    "advancedThresholds": "고급 임계값",
+    "backend": {
+      "provider": "제공자",
+      "pixai": "Pixai (Ollama + Tagger)",
+      "gemini": "Google Gemini",
+      "keyStorage": "키는 메모리에만 저장됩니다.",
+      "pixaiDescription": "로컬 태거 결과와 Ollama의 추론 및 캡션 기능을 매끄럽게 결합합니다.",
+      "ollamaEndpointLabel": "Ollama 엔드포인트 (LLM/Vision)",
+      "ollamaModel": "Ollama 모델"
+    },
+    "categories": {
+      "general": "일반",
+      "character": "캐릭터",
+      "copyright": "저작권",
+      "artist": "아티스트",
+      "meta": "메타",
+      "rating": "등급"
+    }
+  },
+  "errors": {
+    "geminiKeyRequired": "Gemini API 키가 필요합니다. 설정 패널에서 구성해 주세요.",
+    "ollamaRequired": "Pixai 모드에는 Ollama 엔드포인트가 필요합니다.",
+    "taggerRequired": "Pixai 모드에는 로컬 태거 엔드포인트가 필요합니다.",
+    "unknown": "알 수 없는 오류가 발생했습니다"
+  },
+  "info": {
+    "title": "Farterrogator란 무엇인가요?",
+    "description": "<strong>파테로게이터(Farterrogator)</strong>는 이미지를 분석하고 상세한 메타데이터, 태그, 자연어 설명을 추출하도록 설계된 고급 AI 이미지 심문 도구입니다. 아티스트, 개발자, 애호가가 이미지의 내용을 이해하고 추가 AI 처리를 준비하는 데 도움을 줍니다.",
+    "features": {
+      "dualModes": {
+        "title": "이중 분석 모드",
+        "description": "클라우드 기반 최첨단 분석을 위한 <strong>Google Gemini</strong>와 <strong>gpu.garden</strong>에서 호스팅되는 Ollama(Vision 모델)와 WD1.4 태거를 결합한 <strong>Pixai</strong> 중에서 선택하세요."
+      },
+      "naiReady": {
+        "title": "NAI 준비 임베딩",
+        "description": "생성된 태그나 설명을 PNG 메타데이터에 자동으로 임베딩합니다. 결과 이미지는 \"NAI 준비됨(NAI Ready)\" 상태가 되며, NovelAI에 드래그하면 분석된 데이터로 프롬프트가 자동 채워집니다."
+      },
+      "privacy": {
+        "title": "개인정보 보호 및 보안",
+        "description": "Pixai 모드에서 이미지는 <strong>Fartcore 데이터 센터</strong>를 통해 <strong>gpu.garden</strong>에서 안전하게 처리됩니다. 기기에서 실행되지는 않지만, 데이터는 엄격한 개인정보 보호 표준에 따라 처리됩니다."
+      },
+      "gpuGarden": {
+        "title": "GPU Garden 통합",
+        "description": "GPU Garden 인프라와 함께 사용하도록 최적화되어 있어, 무거운 작업을 위해 원격 GPU 인스턴스로 원활하게 프록시할 수 있습니다."
+      }
+    },
+    "howTo": {
+      "title": "사용 방법",
+      "step1": "이미지를 업로드하거나 캔버스에 드래그 앤 드롭하세요.",
+      "step2": "선호하는 백엔드(Gemini 또는 Pixai)를 선택하세요.",
+      "step3": "태그를 필터링하기 위해 신뢰도 임계값을 조정하세요.",
+      "step4": "<strong>심문 시작</strong>을 클릭하세요.",
+      "step5": "태그를 복사하거나 워크플로우에 사용할 <strong>NAI 준비</strong> PNG를 다운로드하세요."
+    },
+    "madeBy": "제작:"
+  },
+  "theme": {
+    "light": "라이트 모드",
+    "auto": "시스템 자동",
+    "dark": "다크 모드"
+  }
+}
