@@ -61,6 +61,8 @@
     "outputSettings": "Ausgabeeinstellungen",
     "backendSettings": "Backend-Einstellungen",
     "topK": "Top K Tags",
+    "maxTags": "Max. Tags (0 = Unbegrenzt)",
+    "triggerPhrase": "Trigger-Phrase",
     "randomize": "Zufällige Reihenfolge",
     "removeUnderscores": "Unterstriche entfernen",
     "backendType": "Backend-Typ",

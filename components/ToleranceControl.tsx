@@ -163,6 +163,35 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between">
+                  <span id="max-tags-label" className="text-sm text-slate-700 dark:text-slate-300">{t('settings.maxTags')}</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="0" max="100" step="5"
+                      value={settings.maxTags || 0}
+                      onChange={(e) => onSettingsChange({ ...settings, maxTags: parseInt(e.target.value) })}
+                      disabled={disabled}
+                      className="w-24 h-1 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:bg-red-600 [&::-webkit-slider-thumb]:rounded-full"
+                      aria-labelledby="max-tags-label"
+                    />
+                    <span className="w-8 text-right text-xs font-mono text-slate-600 dark:text-slate-400">{settings.maxTags || 0}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <label htmlFor="trigger-phrase" className="text-sm text-slate-700 dark:text-slate-300 block">{t('settings.triggerPhrase')}</label>
+                  <input
+                    id="trigger-phrase"
+                    type="text"
+                    value={settings.triggerPhrase || ''}
+                    onChange={(e) => onSettingsChange({ ...settings, triggerPhrase: e.target.value })}
+                    disabled={disabled}
+                    placeholder="e.g. masterpiece, best quality"
+                    className="w-full px-3 py-1.5 text-xs bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     {settings.randomize ? <Shuffle className="w-4 h-4 text-red-500" aria-hidden="true" /> : <SortAsc className="w-4 h-4 text-slate-400" aria-hidden="true" />}
                     <span id="randomize-label" className="text-sm text-slate-700 dark:text-slate-300">{t('settings.randomize')}</span>

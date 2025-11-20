@@ -60,6 +60,8 @@
     "outputSettings": "Impostazioni Output",
     "backendSettings": "Impostazioni Backend",
     "topK": "Top K Tag",
+    "maxTags": "Max Tag (0 = Illimitato)",
+    "triggerPhrase": "Frase di attivazione",
     "randomize": "Ordine Casuale",
     "removeUnderscores": "Rimuovi Trattini Bassi",
     "backendType": "Tipo Backend",

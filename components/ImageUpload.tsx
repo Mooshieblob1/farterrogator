@@ -1,18 +1,31 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Upload, Image as ImageIcon, X, Loader2 } from 'lucide-react';
+import { Upload, Image as ImageIcon, X, Loader2, FileArchive, Files } from 'lucide-react';
+import JSZip from 'jszip';
+// @ts-ignore
+import untar from 'js-untar';
 
 interface ImageUploadProps {
-  onImageSelect: (file: File) => void;
-  selectedImage: File | null;
+  onFilesSelect: (files: File[]) => void;
+  selectedFiles: File[];
   onClear: () => void;
 }
 
-export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selectedImage, onClear }) => {
+export const ImageUpload: React.FC<ImageUploadProps> = ({ onFilesSelect, selectedFiles, onClear }) => {
   const { t } = useTranslation();
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+
+  // Cleanup preview URL on unmount or change
+  useEffect(() => {
+    if (selectedFiles.length === 1 && !previewUrl) {
+        setPreviewUrl(URL.createObjectURL(selectedFiles[0]));
+    }
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    };
+  }, [selectedFiles, previewUrl]);
 
   const resizeImageIfNeeded = async (file: File): Promise<File> => {
     const MAX_SIZE = 10 * 1024 * 1024; // 10MB
@@ -77,29 +90,87 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
     });
   };
 
-  const processFile = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) return;
-    
+  const processFiles = useCallback(async (files: File[]) => {
     setIsProcessing(true);
+    const processedImages: File[] = [];
+
     try {
-      const processedFile = await resizeImageIfNeeded(file);
-      const url = URL.createObjectURL(processedFile);
-      setPreviewUrl(url);
-      onImageSelect(processedFile);
+      for (const file of files) {
+        if (file.name.toLowerCase().endsWith('.zip')) {
+           // Handle zip
+           try {
+             const zip = new JSZip();
+             const content = await zip.loadAsync(file);
+             for (const filename of Object.keys(content.files)) {
+               const zipEntry = content.files[filename];
+               if (!zipEntry.dir && (filename.match(/\.(png|jpg|jpeg|webp|gif)$/i))) {
+                 const blob = await zipEntry.async('blob');
+                 // Determine mime type from extension if blob.type is empty
+                 let mimeType = blob.type;
+                 if (!mimeType) {
+                    const ext = filename.split('.').pop()?.toLowerCase();
+                    if (ext === 'png') mimeType = 'image/png';
+                    else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
+                    else if (ext === 'webp') mimeType = 'image/webp';
+                    else if (ext === 'gif') mimeType = 'image/gif';
+                 }
+                 
+                 const extractedFile = new File([blob], filename, { type: mimeType });
+                 const resized = await resizeImageIfNeeded(extractedFile);
+                 processedImages.push(resized);
+               }
+             }
+           } catch (e) {
+             console.error("Failed to unzip file:", file.name, e);
+           }
+        } else if (file.name.toLowerCase().endsWith('.tar')) {
+           // Handle tar
+           try {
+             const arrayBuffer = await file.arrayBuffer();
+             const files = await untar(arrayBuffer);
+             for (const entry of files) {
+               if (entry.name.match(/\.(png|jpg|jpeg|webp|gif)$/i)) {
+                 const blob = new Blob([entry.buffer]);
+                 let mimeType = blob.type;
+                 if (!mimeType) {
+                    const ext = entry.name.split('.').pop()?.toLowerCase();
+                    if (ext === 'png') mimeType = 'image/png';
+                    else if (ext === 'jpg' || ext === 'jpeg') mimeType = 'image/jpeg';
+                    else if (ext === 'webp') mimeType = 'image/webp';
+                    else if (ext === 'gif') mimeType = 'image/gif';
+                 }
+                 const extractedFile = new File([blob], entry.name, { type: mimeType });
+                 const resized = await resizeImageIfNeeded(extractedFile);
+                 processedImages.push(resized);
+               }
+             }
+           } catch (e) {
+             console.error("Failed to untar file:", file.name, e);
+           }
+        } else if (file.type.startsWith('image/')) {
+           const resized = await resizeImageIfNeeded(file);
+           processedImages.push(resized);
+        }
+      }
+      
+      if (processedImages.length > 0) {
+        onFilesSelect(processedImages);
+        if (processedImages.length === 1) {
+           setPreviewUrl(URL.createObjectURL(processedImages[0]));
+        } else {
+           setPreviewUrl(null);
+        }
+      }
     } catch (error) {
-      console.error("Error processing file:", error);
-      // Fallback to original if processing fails
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-      onImageSelect(file);
+      console.error("Error processing files:", error);
     } finally {
       setIsProcessing(false);
     }
-  }, [onImageSelect]);
+  }, [onFilesSelect]);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      processFile(event.target.files[0]);
+    if (event.target.files && event.target.files.length > 0) {
+      processFiles(Array.from(event.target.files));
     }
   };
 
@@ -107,15 +178,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
       if (e.clipboardData && e.clipboardData.files.length > 0) {
-        const file = e.clipboardData.files[0];
-        if (file.type.startsWith('image/')) {
-          processFile(file);
-        }
+        processFiles(Array.from(e.clipboardData.files));
       }
     };
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, [processFile]);
+  }, [processFiles]);
 
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -130,10 +198,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      processFile(e.dataTransfer.files[0]);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processFiles(Array.from(e.dataTransfer.files));
     }
-  }, [processFile]);
+  }, [processFiles]);
 
   const handleClear = () => {
     setPreviewUrl(null);
@@ -141,14 +209,24 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
   };
 
 
-  if (selectedImage && previewUrl) {
+  if (selectedFiles.length > 0) {
     return (
       <div className="relative group w-fit mx-auto bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden transition-colors duration-300">
-        <img 
-          src={previewUrl} 
-          alt={t('upload.previewAlt') || "Uploaded image preview"} 
-          className="max-w-full max-h-[600px] w-auto h-auto block"
-        />
+        {selectedFiles.length === 1 && previewUrl ? (
+          <img 
+            src={previewUrl} 
+            alt={t('upload.previewAlt') || "Uploaded image preview"} 
+            className="max-w-full max-h-[600px] w-auto h-auto block"
+          />
+        ) : (
+          <div className="p-12 flex flex-col items-center justify-center gap-4 text-slate-600 dark:text-slate-300">
+            <Files className="w-16 h-16 text-blue-500" />
+            <div className="text-center">
+              <p className="text-lg font-semibold">{selectedFiles.length} files selected</p>
+              <p className="text-sm text-slate-500">Ready for batch processing</p>
+            </div>
+          </div>
+        )}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" aria-hidden="true" />
         <button 
           onClick={handleClear}
@@ -194,7 +272,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
     >
       <input 
         type="file" 
-        accept="image/*" 
+        accept="image/png, image/jpeg, image/webp, image/gif, application/zip, application/x-zip-compressed, application/x-tar"
+        multiple
         onChange={handleFileChange} 
         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
         disabled={isProcessing}
@@ -212,11 +291,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageSelect, selecte
       </div>
       
       <div className="text-center space-y-1 pointer-events-none">
-        <p className="text-lg font-medium text-slate-700 dark:text-slate-200">
-          {isProcessing ? t('results.processing') : t('upload.dragDrop')}
+        <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
+          {isDragging ? t('upload.dropHere') || "Drop files here" : t('upload.dragDrop')}
         </p>
-        <p className="text-sm text-slate-500">
-          {t('upload.supports')}
+        <p className="text-xs text-slate-500 dark:text-slate-400">
+          {t('upload.supports')} <span className="opacity-70">(+ ZIP, TAR)</span>
         </p>
       </div>
     </div>

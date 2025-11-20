@@ -89,7 +89,9 @@
       "artist": "Artist",
       "meta": "Meta",
       "rating": "Rating"
-    }
+    },
+    "maxTags": "Max Tags (0 = Unlimited)",
+    "triggerPhrase": "Trigger Phrase"
   },
   "errors": {
     "geminiKeyRequired": "Gemini API Key is required. Please configure it in the settings panel.",

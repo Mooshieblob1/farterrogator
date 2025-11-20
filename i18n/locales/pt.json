@@ -60,6 +60,8 @@
     "outputSettings": "Configurações de Saída",
     "backendSettings": "Configurações de Backend",
     "topK": "Top K Tags",
+    "maxTags": "Máx. Tags (0 = Ilimitado)",
+    "triggerPhrase": "Frase de Gatilho",
     "randomize": "Ordem Aleatória",
     "removeUnderscores": "Remover Sublinhados",
     "backendType": "Tipo de Backend",

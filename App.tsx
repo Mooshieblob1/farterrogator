@@ -5,15 +5,16 @@ import { Header } from './components/Header';
 import { ImageUpload } from './components/ImageUpload';
 import { ToleranceControl } from './components/ToleranceControl';
 import { Results } from './components/Results';
-import { generateTags, generateCaption, fileToBase64, fetchLocalTags, fetchOllamaDescription, fetchOllamaModels } from './services/geminiService';
-import { AppState, InterrogationResult, TaggingSettings, BackendConfig } from './types';
+import { generateTags, generateCaption, fileToBase64, fetchLocalTags, fetchOllamaDescription, fetchOllamaModels, fetchBatchTags } from './services/geminiService';
+import { AppState, InterrogationResult, TaggingSettings, BackendConfig, BatchResult } from './types';
 import { useTheme } from './hooks/useTheme';
 
 const App: React.FC = () => {
   const { t, i18n } = useTranslation();
   const [appState, setAppState] = useState<AppState>(AppState.IDLE);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [result, setResult] = useState<InterrogationResult | null>(null);
+  const [batchResults, setBatchResults] = useState<Record<string, BatchResult> | null>(null);
 
   useEffect(() => {
     document.documentElement.lang = i18n.language;
@@ -38,6 +39,8 @@ const App: React.FC = () => {
         rating: 0.8
       },
       topK: 50,
+      maxTags: 0,
+      triggerPhrase: '',
       randomize: false,
       removeUnderscores: false
     };
@@ -74,17 +77,19 @@ const App: React.FC = () => {
   const [isGeneratingCaption, setIsGeneratingCaption] = useState(false);
   const { theme, setTheme } = useTheme();
 
-  const handleImageSelect = (file: File) => {
-    setSelectedFile(file);
+  const handleFilesSelect = (files: File[]) => {
+    setSelectedFiles(files);
     setAppState(AppState.IDLE);
     setResult(null);
+    setBatchResults(null);
     setError(null);
     setIsGeneratingCaption(false);
   };
 
   const handleClear = () => {
-    setSelectedFile(null);
+    setSelectedFiles([]);
     setResult(null);
+    setBatchResults(null);
     setAppState(AppState.IDLE);
     setError(null);
     setIsGeneratingCaption(false);
@@ -119,8 +124,8 @@ const App: React.FC = () => {
     status: ''
   });
 
-  const handleInterrogate = async () => {
-    if (!selectedFile) return;
+    const handleInterrogate = async () => {
+    if (selectedFiles.length === 0) return;
 
     // Strict validation before starting
     if (!validateBackendConfig()) return;
@@ -134,23 +139,34 @@ const App: React.FC = () => {
     });
     setError(null);
     setResult({ tags: [], naturalDescription: undefined }); // Reset result
+    setBatchResults(null);
 
     try {
-      const base64 = await fileToBase64(selectedFile);
+      if (selectedFiles.length === 1) {
+        const file = selectedFiles[0];
+        const base64 = await fileToBase64(file);
 
-      // Unified flow for both Gemini and Local Hybrid
-      const result = await generateTags(
-        base64, 
-        selectedFile.type, 
-        backendConfig,
-        i18n.language,
-        (status, progress) => {
-          setLoadingState(prev => ({ ...prev, status, progress }));
-        }
-      );
-      
-      setResult(result);
-      setAppState(AppState.SUCCESS);
+        // Unified flow for both Gemini and Local Hybrid
+        const result = await generateTags(
+          base64, 
+          file.type, 
+          backendConfig,
+          settings,
+          i18n.language,
+          (status, progress) => {
+            setLoadingState(prev => ({ ...prev, status, progress }));
+          }
+        );
+        
+        setResult(result);
+        setAppState(AppState.SUCCESS);
+      } else {
+        // Batch Logic
+        setLoadingState(prev => ({ ...prev, status: t('results.analyzing'), progress: 50 }));
+        const results = await fetchBatchTags(selectedFiles, backendConfig, settings);
+        setBatchResults(results);
+        setAppState(AppState.SUCCESS);
+      }
     } catch (err) {
       console.error(err);
       setAppState(AppState.ERROR);
@@ -163,12 +179,13 @@ const App: React.FC = () => {
   // Deprecated/Modified: handleGenerateCaption is now part of the main flow for Local Hybrid, 
   // but kept for Gemini or manual re-trigger if needed.
   const handleGenerateCaption = async () => {
-    if (!selectedFile || !result) return;
+    if (selectedFiles.length !== 1 || !result) return;
     if (!validateBackendConfig()) return;
 
     setIsGeneratingCaption(true);
     try {
-      const base64 = await fileToBase64(selectedFile);
+      const file = selectedFiles[0];
+      const base64 = await fileToBase64(file);
       // If we have tags, we can use them to refine the description (Parity)
       // But generateCaption currently doesn't accept tags. 
       // We can just call generateCaption which uses Ollama/Gemini directly on the image.
@@ -176,11 +193,11 @@ const App: React.FC = () => {
       // For now, let's stick to the standard generateCaption which does a fresh look.
       // Ideally, we should pass the tags to ensure parity if that's what the user wants.
 
-      const caption = await generateCaption(base64, selectedFile.type, backendConfig, result.tags, i18n.language);
+      const caption = await generateCaption(base64, file.type, backendConfig, result.tags, i18n.language);
       setResult(prev => prev ? { ...prev, naturalDescription: caption } : null);
     } catch (err) {
       console.error(err);
-      setError("Failed to generate caption. Please try again.");
+      setError(err instanceof Error ? err.message : t('errors.unknown'));
     } finally {
       setIsGeneratingCaption(false);
     }
@@ -197,8 +214,8 @@ const App: React.FC = () => {
           <div className="space-y-2">
             <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t('upload.inputImage')}</h2>
             <ImageUpload
-              onImageSelect={handleImageSelect}
-              selectedImage={selectedFile}
+              onFilesSelect={handleFilesSelect}
+              selectedFiles={selectedFiles}
               onClear={handleClear}
             />
           </div>
@@ -206,10 +223,10 @@ const App: React.FC = () => {
           <div className="space-y-4">
             <button
               onClick={handleInterrogate}
-              disabled={!selectedFile || appState === AppState.ANALYZING}
+              disabled={selectedFiles.length === 0 || appState === AppState.ANALYZING}
               className={`
                  w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all shadow-lg
-                 ${!selectedFile
+                 ${selectedFiles.length === 0
                   ? 'bg-slate-200 dark:bg-slate-800 text-slate-400 dark:text-slate-500 cursor-not-allowed'
                   : appState === AppState.ANALYZING
                     ? 'bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-300 cursor-wait border border-red-200 dark:border-red-500/30'
@@ -252,7 +269,7 @@ const App: React.FC = () => {
           </div>
 
           <div className="flex-1 bg-white dark:bg-slate-900/30 rounded-2xl border border-slate-200 dark:border-slate-800 p-1 transition-colors duration-300 relative min-h-[500px]">
-            {!result && appState !== AppState.ERROR && (
+            {!result && !batchResults && appState !== AppState.ERROR && (
               <div className="absolute inset-0 m-2 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center text-slate-400 dark:text-slate-600">
                 <Sparkles className="w-12 h-12 mb-3 opacity-20" />
                 <p className="font-medium opacity-50">{t('results.ready')}</p>
@@ -278,7 +295,7 @@ const App: React.FC = () => {
               </div>
             )}
 
-            {result && (
+            {result && selectedFiles.length === 1 && (
               <div className="h-full p-4">
                 <Results
                   result={result}
@@ -286,8 +303,24 @@ const App: React.FC = () => {
                   onGenerateCaption={handleGenerateCaption}
                   isGeneratingCaption={isGeneratingCaption}
                   loadingState={loadingState}
-                  selectedFile={selectedFile}
+                  selectedFile={selectedFiles[0]}
                 />
+              </div>
+            )}
+
+            {batchResults && (
+              <div className="h-full p-4 overflow-auto">
+                <h3 className="text-lg font-bold mb-4">Batch Results</h3>
+                <div className="space-y-4">
+                  {Object.entries(batchResults).map(([filename, data]: [string, BatchResult]) => (
+                    <div key={filename} className="p-4 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+                      <h4 className="font-semibold mb-2 text-sm text-slate-700 dark:text-slate-300">{filename}</h4>
+                      <div className="bg-white dark:bg-slate-900 p-3 rounded border border-slate-200 dark:border-slate-700 font-mono text-xs break-all">
+                        {data.tag_string}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>

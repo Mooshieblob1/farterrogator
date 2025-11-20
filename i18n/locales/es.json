@@ -89,7 +89,9 @@
       "artist": "Artista",
       "meta": "Meta",
       "rating": "Clasificación"
-    }
+    },
+    "maxTags": "Máx. Etiquetas (0 = Ilimitado)",
+    "triggerPhrase": "Frase Desencadenante"
   },
   "errors": {
     "geminiKeyRequired": "Se requiere la clave API de Gemini. Por favor configúrala en el panel de configuración.",

@@ -1,4 +1,3 @@
-
 export type TagCategory = 'general' | 'character' | 'copyright' | 'artist' | 'meta' | 'rating';
 
 export type BackendType = 'gemini' | 'local_hybrid';
@@ -13,6 +12,11 @@ export interface Tag {
 export interface InterrogationResult {
   naturalDescription?: string;
   tags: Tag[];
+}
+
+export interface BatchResult {
+  tags: Record<string, number>;
+  tag_string: string;
 }
 
 export interface BackendConfig {
@@ -31,6 +35,8 @@ export interface BackendConfig {
 export interface TaggingSettings {
   thresholds: Record<TagCategory, number>;
   topK: number;
+  maxTags: number; // New: Server-side limit
+  triggerPhrase: string; // New: Server-side trigger phrase
   randomize: boolean;
   removeUnderscores: boolean;
 }

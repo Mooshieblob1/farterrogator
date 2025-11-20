@@ -1,5 +1,5 @@
 import { GoogleGenAI, Type } from "@google/genai";
-import { Tag, BackendConfig, TagCategory, InterrogationResult } from "../types";
+import { Tag, BackendConfig, TagCategory, InterrogationResult, TaggingSettings, BatchResult } from "../types";
 import i18n from '../i18n/config';
 
 const sanitizeDescription = (text: string): string => {
@@ -37,6 +37,7 @@ const getLanguageName = (code: string): string => {
 };
 
 // --- GEMINI IMPLEMENTATION ---
+
 const getGeminiClient = (apiKey: string) => {
   if (!apiKey) {
     throw new Error("Gemini API Key is missing. Please enter it in the configuration panel.");
@@ -153,7 +154,7 @@ import { getCategory, loadTagDatabase, isTagInCategory } from './tagService';
 loadTagDatabase();
 
 
-export const fetchLocalTags = async (base64Image: string, config: BackendConfig): Promise<Tag[]> => {
+export const fetchLocalTags = async (base64Image: string, config: BackendConfig, settings?: TaggingSettings): Promise<Tag[]> => {
   if (!config.taggerEndpoint || config.taggerEndpoint.trim() === '') {
     throw new Error("Local Tagger endpoint is invalid or missing.");
   }
@@ -169,6 +170,20 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig)
 
   const formData = new FormData();
   formData.append('file', blob, 'image.png');
+
+  // Add new parameters from settings
+  if (settings) {
+    if (settings.maxTags && settings.maxTags > 0) {
+      formData.append('max_tags', settings.maxTags.toString());
+    }
+    if (settings.triggerPhrase && settings.triggerPhrase.trim() !== '') {
+      formData.append('trigger_phrase', settings.triggerPhrase);
+    }
+    // Optional: Pass threshold if available in settings (using general as default)
+    if (settings.thresholds && settings.thresholds.general) {
+      formData.append('threshold', settings.thresholds.general.toString());
+    }
+  }
 
   // Automatic Proxy Handling for known CORS-restricted endpoints (DEV ONLY)
   let endpoint = config.taggerEndpoint;
@@ -276,6 +291,84 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig)
       throw new Error(`Network Error (CORS): The browser blocked the request to ${config.taggerEndpoint}. This is a security feature. To fix this, update vite.config.ts to proxy this URL, or ensure the server allows CORS.`);
     }
 
+    throw error;
+  }
+};
+
+export const fetchBatchTags = async (
+  files: File[],
+  config: BackendConfig,
+  settings?: TaggingSettings
+): Promise<Record<string, BatchResult>> => {
+  if (!config.taggerEndpoint || config.taggerEndpoint.trim() === '') {
+    throw new Error("Local Tagger endpoint is invalid or missing.");
+  }
+
+  const formData = new FormData();
+  files.forEach(file => {
+    formData.append('files', file);
+  });
+
+  if (settings) {
+    if (settings.maxTags && settings.maxTags > 0) {
+      formData.append('max_tags', settings.maxTags.toString());
+    }
+    if (settings.triggerPhrase && settings.triggerPhrase.trim() !== '') {
+      formData.append('trigger_phrase', settings.triggerPhrase);
+    }
+    if (settings.thresholds && settings.thresholds.general) {
+      formData.append('threshold', settings.thresholds.general.toString());
+    }
+  }
+
+  let endpoint = config.taggerEndpoint;
+
+  // Normalize endpoint to point to /batch
+  // If the user provided endpoint ends with /interrogate, strip it and add /batch
+  if (endpoint.endsWith('/interrogate')) {
+    endpoint = endpoint.substring(0, endpoint.length - '/interrogate'.length);
+  }
+  if (endpoint.endsWith('/')) {
+    endpoint = endpoint.substring(0, endpoint.length - 1);
+  }
+  endpoint = endpoint + '/batch';
+
+  // Force HTTPS for remote endpoints
+  if (endpoint.includes('gpu.garden') && endpoint.startsWith('http:')) {
+    endpoint = endpoint.replace('http:', 'https:');
+  }
+
+  // Automatic Proxy Handling (DEV ONLY)
+  const isLocalhost = typeof window !== 'undefined' && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1');
+
+  if ((import.meta.env.DEV || isLocalhost) && endpoint.includes('localtagger.gpu.garden')) {
+    // Remove protocol and domain
+    let path = endpoint.replace(/^https?:\/\//, '').replace(/^localtagger\.gpu\.garden/, '');
+    
+    if (!path.startsWith('/')) {
+      path = '/' + path;
+    }
+
+    endpoint = `/interrogate/gpu-garden${path}`;
+    console.log(`[Proxy] Rewrote batch endpoint to ${endpoint}`);
+  }
+
+  try {
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Batch Tagger Error: ${response.status} ${response.statusText}`);
+    }
+
+    return await response.json();
+  } catch (error: any) {
+    console.error("Fetch Batch Tags Error:", error);
+    if (config.taggerEndpoint.startsWith('http') && !config.taggerEndpoint.includes('localhost') && error.message === 'Failed to fetch') {
+      throw new Error(`Network Error (CORS): The browser blocked the request to ${config.taggerEndpoint}.`);
+    }
     throw error;
   }
 };
@@ -671,6 +764,7 @@ const enrichTagsWithCopyrights = async (
 const generateTagsLocalHybrid = async (
   base64Image: string, 
   config: BackendConfig,
+  settings?: TaggingSettings,
   language: string = 'en',
   onProgress?: (status: string, progress: number) => void
 ): Promise<InterrogationResult> => {
@@ -678,7 +772,7 @@ const generateTagsLocalHybrid = async (
   let localTags: Tag[] = [];
   try {
     onProgress?.(i18n.t('status.analyzingLocal'), 10);
-    localTags = await fetchLocalTags(base64Image, config);
+    localTags = await fetchLocalTags(base64Image, config, settings);
   } catch (e) {
     console.error("Local Tagger Failed:", e);
   }
@@ -759,6 +853,7 @@ export const generateTags = async (
   base64Image: string,
   mimeType: string,
   config: BackendConfig,
+  settings?: TaggingSettings,
   language: string = 'en',
   onProgress?: (status: string, progress: number) => void
 ): Promise<InterrogationResult> => {
@@ -767,7 +862,7 @@ export const generateTags = async (
 
   switch (config.type) {
     case 'local_hybrid':
-      return generateTagsLocalHybrid(base64Image, config, language, onProgress);
+      return generateTagsLocalHybrid(base64Image, config, settings, language, onProgress);
     case 'gemini':
     default:
       return generateTagsGemini(base64Image, mimeType, config, language, onProgress);
