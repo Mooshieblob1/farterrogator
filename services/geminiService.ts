@@ -437,7 +437,7 @@ const fetchOllamaTagsAndSummary = async (
   if (!config.ollamaEndpoint) return { tags: [], summary: "" };
 
   const proxiedEndpoint = getProxiedOllamaEndpoint(config.ollamaEndpoint);
-  const langName = getLanguageName(language);
+  const langName = 'English'; // Force English for prompts as per user request
 
   let prompt = `Describe this image using a comma-separated list of Danbooru-style tags (lowercase, underscores for spaces) and a short summary in ${langName}. Format: Tags: tag1, tag2, ... Summary: ...`;
 
@@ -781,7 +781,7 @@ export const generateCaption = async (
   existingTags?: Tag[],
   language: string = 'en'
 ): Promise<string> => {
-  const langName = getLanguageName(language);
+  const langName = 'English'; // Force English for prompts as per user request
 
   if (config.type === 'local_hybrid') {
     if (!config.ollamaEndpoint || config.ollamaEndpoint.trim() === '') {
