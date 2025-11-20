@@ -13,6 +13,7 @@ import pt from './locales/pt.json';
 import ko from './locales/ko.json';
 import zhCN from './locales/zh-CN.json';
 import zhTW from './locales/zh-TW.json';
+import hi from './locales/hi.json';
 
 i18n
   .use(LanguageDetector)
@@ -29,7 +30,8 @@ i18n
       pt: { translation: pt },
       ko: { translation: ko },
       'zh-CN': { translation: zhCN },
-      'zh-TW': { translation: zhTW }
+      'zh-TW': { translation: zhTW },
+      hi: { translation: hi }
     },
     fallbackLng: 'en',
     interpolation: {

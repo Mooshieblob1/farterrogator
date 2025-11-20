@@ -25,16 +25,18 @@ export const LanguageSelector: React.FC = () => {
 
   const languages = [
     { code: 'en', label: 'English' },
-    { code: 'fr', label: 'Français' },
     { code: 'es', label: 'Español' },
+    { code: 'divider', label: '' },
     { code: 'de', label: 'Deutsch' },
+    { code: 'zh-TW', label: '繁體中文' }, // Fántǐ Zhōngwén
+    { code: 'fr', label: 'Français' },
+    { code: 'ko', label: '한국어' }, // Hanguk-eo
+    { code: 'hi', label: 'हिन्दी' }, // Hindi
     { code: 'it', label: 'Italiano' },
-    { code: 'ja', label: '日本語' },
-    { code: 'ru', label: 'Русский' },
+    { code: 'zh-CN', label: '简体中文' }, // Jiǎntǐ Zhōngwén
+    { code: 'ja', label: '日本語' }, // Nihongo
     { code: 'pt', label: 'Português' },
-    { code: 'ko', label: '한국어' },
-    { code: 'zh-CN', label: '简体中文' },
-    { code: 'zh-TW', label: '繁體中文' }
+    { code: 'ru', label: 'Русский' } // Russkiy
   ];
 
   const currentLang = i18n.language || 'en';
@@ -58,18 +60,22 @@ export const LanguageSelector: React.FC = () => {
       {isOpen && (
         <div className="absolute right-0 top-full mt-2 w-36 bg-white dark:bg-slate-900 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 py-1 z-50 animate-in fade-in zoom-in-95 duration-100">
           {languages.map((lang) => (
-            <button 
-              key={lang.code}
-              onClick={() => changeLanguage(lang.code)}
-              className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
-                currentLang === lang.code
-                  ? 'text-red-600 dark:text-red-500 font-medium bg-red-50/50 dark:bg-red-900/10' 
-                  : 'text-slate-600 dark:text-slate-400'
-              }`}
-            >
-              {lang.label}
-              {currentLang === lang.code && <Check className="w-3.5 h-3.5" />}
-            </button>
+            lang.code === 'divider' ? (
+              <div key="divider" className="h-px bg-slate-200 dark:bg-slate-700 my-1 mx-2" />
+            ) : (
+              <button 
+                key={lang.code}
+                onClick={() => changeLanguage(lang.code)}
+                className={`w-full text-left px-4 py-2.5 text-sm flex items-center justify-between hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors ${
+                  currentLang === lang.code
+                    ? 'text-red-600 dark:text-red-500 font-medium bg-red-50/50 dark:bg-red-900/10' 
+                    : 'text-slate-600 dark:text-slate-400'
+                }`}
+              >
+                {lang.label}
+                {currentLang === lang.code && <Check className="w-3.5 h-3.5" />}
+              </button>
+            )
           ))}
         </div>
       )}

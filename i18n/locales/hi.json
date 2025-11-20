@@ -1,0 +1,121 @@
+{
+  "app": {
+    "title": "Farterrogator",
+    "subtitle": "AI इमेज एनालाइज़र",
+    "copyright": "© {{year}} Fartcore. सर्वाधिकार सुरक्षित।"
+  },
+  "header": {
+    "whatIsThis": "यह क्या है?",
+    "poweredBy": "{{model}} द्वारा संचालित",
+    "nothingYet": "अभी कुछ नहीं"
+  },
+  "upload": {
+    "inputImage": "इनपुट इमेज",
+    "dragDrop": "यहाँ इमेज ड्रैग और ड्रॉप करें, या चुनने के लिए क्लिक करें",
+    "supports": "PNG, JPG, WEBP, GIF का समर्थन करता है",
+    "clear": "इमेज हटाएँ",
+    "interrogate": "विश्लेषण करें"
+  },
+  "results": {
+    "title": "विश्लेषण परिणाम",
+    "ready": "विश्लेषण के लिए तैयार",
+    "readySub": "टैग और विवरण देखने के लिए इमेज अपलोड करें",
+    "failed": "विश्लेषण विफल",
+    "troubleshoot": "लोकल मोड समस्या निवारण:",
+    "troubleshootOllama": "सुनिश्चित करें कि Ollama {{endpoint}} पर चल रहा है",
+    "troubleshootTagger": "सुनिश्चित करें कि लोकल टैगर {{endpoint}} पर चल रहा है",
+    "troubleshootCors": "दोनों लोकल सर्वर पर CORS हेडर की जाँच करें",
+    "processing": "प्रोसेस हो रहा है...",
+    "analyzing": "विश्लेषण हो रहा है...",
+    "generatingTags": "तकनीकी टैग जनरेट हो रहे हैं...",
+    "descriptionNotGenerated": "विवरण जनरेट नहीं हुआ।",
+    "generateDescription": "प्राकृतिक भाषा विवरण जनरेट करें",
+    "technicalTags": "तकनीकी टैग",
+    "randomized": "रैंडम",
+    "noUnderscores": "अंडरस्कोर हटाएँ",
+    "copyAll": "सभी कॉपी करें",
+    "copied": "कॉपी हो गया!",
+    "naiReady": "NAI रेडी",
+    "tagsCopied": "सभी टैग क्लिपबोर्ड पर कॉपी हो गए!",
+    "descriptionCopied": "विवरण क्लिपबोर्ड पर कॉपी हो गया!",
+    "embedFailed": "NAI रेडी इमेज बनाने में विफल।"
+  },
+  "settings": {
+    "title": "सेटिंग्स",
+    "thresholds": "थ्रेशोल्ड",
+    "outputSettings": "आउटपुट सेटिंग्स",
+    "backendSettings": "बैकएंड सेटिंग्स",
+    "topK": "शीर्ष K टैग",
+    "randomize": "क्रम रैंडम करें",
+    "removeUnderscores": "अंडरस्कोर हटाएँ",
+    "backendType": "बैकएंड प्रकार",
+    "geminiKey": "Gemini API कुंजी",
+    "ollamaEndpoint": "Ollama एंडपॉइंट",
+    "ollamaModel": "Ollama मॉडल",
+    "refresh": "रिफ्रेश",
+    "taggerEndpoint": "लोकल टैगर एंडपॉइंट",
+    "enableNaturalLanguage": "प्राकृतिक भाषा सक्षम करें",
+    "naturalLanguageWarning": "(इसमें अधिक समय लगेगा)",
+    "simpleMode": "सरल मोड",
+    "advancedThresholds": "उन्नत थ्रेशोल्ड",
+    "backend": {
+      "provider": "प्रदाता",
+      "pixai": "Pixai (Ollama + Tagger)",
+      "gemini": "Google Gemini",
+      "keyStorage": "कुंजी केवल मेमोरी में संग्रहीत है।",
+      "pixaiDescription": "लोकल टैगर परिणामों को Ollama की तर्क और कैप्शनिंग क्षमताओं के साथ सहजता से जोड़ता है।",
+      "ollamaEndpointLabel": "Ollama एंडपॉइंट (LLM/Vision)",
+      "ollamaModel": "Ollama मॉडल"
+    },
+    "categories": {
+      "general": "सामान्य",
+      "character": "पात्र",
+      "copyright": "कॉपीराइट",
+      "artist": "कलाकार",
+      "meta": "मेटा",
+      "rating": "रेटिंग"
+    }
+  },
+  "errors": {
+    "geminiKeyRequired": "Gemini API कुंजी आवश्यक है। कृपया इसे सेटिंग्स पैनल में कॉन्फ़िगर करें।",
+    "ollamaRequired": "Pixai मोड के लिए Ollama एंडपॉइंट आवश्यक है।",
+    "taggerRequired": "Pixai मोड के लिए लोकल टैगर एंडपॉइंट आवश्यक है।",
+    "unknown": "एक अज्ञात त्रुटि हुई"
+  },
+  "info": {
+    "title": "Farterrogator क्या है?",
+    "description": "<strong>Farterrogator</strong> एक उन्नत AI इमेज विश्लेषण टूल है जिसे छवियों का विश्लेषण करने और विस्तृत मेटाडेटा, टैग और प्राकृतिक भाषा विवरण निकालने के लिए डिज़ाइन किया गया है। यह कलाकारों, डेवलपर्स और उत्साही लोगों को उनकी छवियों की सामग्री को समझने और आगे की AI प्रोसेसिंग के लिए तैयार करने में मदद करता है।",
+    "features": {
+      "dualModes": {
+        "title": "दोहरा विश्लेषण मोड",
+        "description": "क्लाउड-आधारित अत्याधुनिक विश्लेषण के लिए <strong>Google Gemini</strong> चुनें, या <strong>Pixai</strong> चुनें जो WD1.4 Tagger को <strong>gpu.garden</strong> पर होस्ट किए गए Ollama (Vision Models) के साथ जोड़ता है।"
+      },
+      "naiReady": {
+        "title": "NAI रेडी एम्बेडिंग",
+        "description": "जनरेट किए गए टैग या विवरण को PNG मेटाडेटा में स्वचालित रूप से एम्बेड करें। परिणामी छवियां \"NAI रेडी\" हैं - बस उन्हें NovelAI में ड्रैग करें ताकि विश्लेषण किए गए डेटा के साथ प्रॉम्प्ट अपने आप भर जाएं।"
+      },
+      "privacy": {
+        "title": "गोपनीयता और सुरक्षा",
+        "description": "Pixai मोड में, आपकी छवियों को <strong>Fartcore डेटा सेंटर</strong> के माध्यम से <strong>gpu.garden</strong> पर सुरक्षित रूप से प्रोसेस किया जाता है। हालांकि यह आपके डिवाइस पर नहीं चल रहा है, लेकिन आपके डेटा को सख्त गोपनीयता मानकों के साथ संभाला जाता है।"
+      },
+      "gpuGarden": {
+        "title": "GPU Garden एकीकरण",
+        "description": "GPU Garden के बुनियादी ढांचे के साथ उपयोग के लिए अनुकूलित, जो भारी कार्यों के लिए रिमोट GPU इंस्टेंस पर निर्बाध प्रॉक्सी की अनुमति देता है।"
+      }
+    },
+    "howTo": {
+      "title": "कैसे उपयोग करें",
+      "step1": "एक इमेज अपलोड करें या कैनवास पर ड्रैग और ड्रॉप करें।",
+      "step2": "अपना पसंदीदा बैकएंड (Gemini या Pixai) चुनें।",
+      "step3": "टैग फ़िल्टर करने के लिए आत्मविश्वास थ्रेशोल्ड समायोजित करें।",
+      "step4": "<strong>विश्लेषण शुरू करें</strong> पर क्लिक करें।",
+      "step5": "टैग कॉपी करें, या अपने वर्कफ़्लो में उपयोग करने के लिए <strong>NAI रेडी</strong> PNG डाउनलोड करें।"
+    },
+    "madeBy": "निर्माता"
+  },
+  "theme": {
+    "light": "लाइट मोड",
+    "auto": "सिस्टम ऑटो",
+    "dark": "डार्क मोड"
+  }
+}
