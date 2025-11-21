@@ -263,7 +263,7 @@ const App: React.FC = () => {
             <h2 className="text-lg font-semibold text-slate-800 dark:text-slate-100">{t('results.title')}</h2>
             {backendConfig.type !== 'gemini' && (
               <span className="px-2 py-0.5 text-[10px] font-medium rounded bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200 border border-amber-200 dark:border-amber-800/50">
-                Pixai
+                EVA
               </span>
             )}
           </div>

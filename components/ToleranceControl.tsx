@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Settings2, Shuffle, SortAsc, ChevronDown, ChevronUp, Layers, User, Palette, Cpu, Type, Shield, Server, Globe, Key, RefreshCw } from 'lucide-react';
+import { Settings2, Shuffle, SortAsc, ChevronDown, ChevronUp, Layers, User, Palette, Cpu, Type, Shield, Server, Globe, Key, RefreshCw, Download } from 'lucide-react';
 import { TaggingSettings, TagCategory, BackendConfig, BackendType } from '../types';
 import { fetchOllamaModels } from '../services/geminiService';
 
@@ -337,7 +337,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                     >
                       {type === 'gemini' && <Globe className="w-4 h-4" aria-hidden="true" />}
                       {type === 'local_hybrid' && <Server className="w-4 h-4" aria-hidden="true" />}
-                      {type === 'local_hybrid' ? t('settings.backend.pixai') : t('settings.backend.gemini')}
+                      {type === 'local_hybrid' ? t('settings.backend.eva') : t('settings.backend.gemini')}
                     </button>
                   ))}
                 </div>
@@ -366,7 +366,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
               {backendConfig.type === 'local_hybrid' && (
                 <div className="space-y-3 pt-2 border-t border-slate-200 dark:border-slate-700 animate-in slide-in-from-top-1">
                   <div className="p-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded text-[10px] text-blue-600 dark:text-blue-300 leading-tight">
-                    {t('settings.backend.pixaiDescription')}
+                    {t('settings.backend.evaDescription')}
                   </div>
                   <div className="space-y-1">
                     <label htmlFor="ollama-endpoint" className="text-xs text-slate-500">{t('settings.backend.ollamaEndpointLabel')}</label>
@@ -426,7 +426,7 @@ export const ToleranceControl: React.FC<ToleranceControlProps> = ({
                       value={backendConfig.taggerEndpoint}
                       onChange={(e) => onBackendChange({ ...backendConfig, taggerEndpoint: e.target.value })}
                       className="w-full text-sm px-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-md focus:ring-2 focus:ring-red-500 outline-none transition-all"
-                      placeholder="/interrogate/pixai"
+                      placeholder="/interrogate/eva"
                     />
                   </div>
                 </div>

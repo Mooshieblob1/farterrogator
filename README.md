@@ -5,7 +5,7 @@
   <p>
     <a href="#features">Features</a> •
     <a href="#getting-started">Getting Started</a> •
-    <a href="#pixai-setup">Pixai Setup</a>
+    <a href="#eva-setup">EVA Setup</a>
   </p>
 </div>
 
@@ -17,7 +17,7 @@
 
 - **Dual Backend Support**:
   - **Google Gemini**: Fast, cloud-based analysis using Gemini models.
-  - **Pixai**: Combines a local tagger (WD1.4/ViT/EVA) for precision tags with **Ollama** for visual reasoning and description.
+  - **EVA**: Combines a local tagger (WD1.4/ViT/EVA) for precision tags with **Ollama** for visual reasoning and description.
 - **Strict Danbooru Tagging**:
   - Automatically categorizes tags into **Copyright**, **Character**, **Artist**, **General**, **Meta**, and **Rating**.
   - Filters and sorts tags by confidence score.
@@ -59,13 +59,13 @@
 
 4. Open `http://localhost:3000` in your browser.
 
-## 🛠️ Pixai Setup (Recommended)
+## 🛠️ EVA Setup (Recommended)
 
-To use the **Pixai** mode for privacy and zero-cost inference, you need two local services running:
+To use the **EVA** mode for privacy and zero-cost inference, you need two local services running:
 
 ### 1. Local Tagger (WD1.4 / ViT / EVA)
 You need a backend that serves a tagging model. This project is configured to work with a service running on port `8000`.
-- **Endpoint**: `http://localhost:8000/interrogate/pixai`
+- **Endpoint**: `http://localhost:8000/interrogate/eva`
 - **Expected Output**: JSON with `tags` object.
 
 ### 2. Ollama (LLM & Vision)
@@ -88,7 +88,7 @@ OLLAMA_ORIGINS="https://tagger.gpu.garden" ollama serve
 
 **Configuration in App:**
 1. Click the **Configuration** panel in the UI.
-2. Select **Pixai** under "AI Backend".
+2. Select **EVA** under "AI Backend".
 3. Ensure endpoints match your local setup.
 4. (Optional) Enable "Natural Language Output" to generate captions.
 

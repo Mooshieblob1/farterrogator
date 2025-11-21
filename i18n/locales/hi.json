@@ -76,10 +76,10 @@
     "advancedThresholds": "उन्नत थ्रेशोल्ड",
     "backend": {
       "provider": "प्रदाता",
-      "pixai": "Pixai (Ollama + Tagger)",
+      "eva": "EVA (Ollama + Tagger)",
       "gemini": "Google Gemini",
       "keyStorage": "कुंजी केवल मेमोरी में संग्रहीत है।",
-      "pixaiDescription": "लोकल टैगर परिणामों को Ollama की तर्क और कैप्शनिंग क्षमताओं के साथ सहजता से जोड़ता है।",
+      "evaDescription": "लोकल टैगर परिणामों को Ollama की तर्क और कैप्शनिंग क्षमताओं के साथ सहजता से जोड़ता है।",
       "ollamaEndpointLabel": "Ollama एंडपॉइंट (LLM/Vision)",
       "ollamaModel": "Ollama मॉडल"
     },
@@ -94,8 +94,8 @@
   },
   "errors": {
     "geminiKeyRequired": "Gemini API कुंजी आवश्यक है। कृपया इसे सेटिंग्स पैनल में कॉन्फ़िगर करें।",
-    "ollamaRequired": "Pixai मोड के लिए Ollama एंडपॉइंट आवश्यक है।",
-    "taggerRequired": "Pixai मोड के लिए लोकल टैगर एंडपॉइंट आवश्यक है।",
+    "ollamaRequired": "EVA मोड के लिए Ollama एंडपॉइंट आवश्यक है।",
+    "taggerRequired": "EVA मोड के लिए लोकल टैगर एंडपॉइंट आवश्यक है।",
     "unknown": "एक अज्ञात त्रुटि हुई"
   },
   "info": {
@@ -104,7 +104,7 @@
     "features": {
       "dualModes": {
         "title": "दोहरा विश्लेषण मोड",
-        "description": "क्लाउड-आधारित अत्याधुनिक विश्लेषण के लिए <strong>Google Gemini</strong> चुनें, या <strong>Pixai</strong> चुनें जो WD1.4 Tagger को <strong>gpu.garden</strong> पर होस्ट किए गए Ollama (Vision Models) के साथ जोड़ता है।"
+        "description": "क्लाउड-आधारित अत्याधुनिक विश्लेषण के लिए <strong>Google Gemini</strong> चुनें, या <strong>EVA</strong> चुनें जो WD1.4 Tagger को <strong>gpu.garden</strong> पर होस्ट किए गए Ollama (Vision Models) के साथ जोड़ता है।"
       },
       "naiReady": {
         "title": "NAI रेडी एम्बेडिंग",
@@ -112,7 +112,7 @@
       },
       "privacy": {
         "title": "गोपनीयता और सुरक्षा",
-        "description": "Pixai मोड में, आपकी छवियों को <strong>Fartcore डेटा सेंटर</strong> के माध्यम से <strong>gpu.garden</strong> पर सुरक्षित रूप से प्रोसेस किया जाता है। हालांकि यह आपके डिवाइस पर नहीं चल रहा है, लेकिन आपके डेटा को सख्त गोपनीयता मानकों के साथ संभाला जाता है।"
+        "description": "EVA मोड में, आपकी छवियों को <strong>Fartcore डेटा सेंटर</strong> के माध्यम से <strong>gpu.garden</strong> पर सुरक्षित रूप से प्रोसेस किया जाता है। हालांकि यह आपके डिवाइस पर नहीं चल रहा है, लेकिन आपके डेटा को सख्त गोपनीयता मानकों के साथ संभाला जाता है।"
       },
       "gpuGarden": {
         "title": "GPU Garden एकीकरण",
@@ -122,7 +122,7 @@
     "howTo": {
       "title": "कैसे उपयोग करें",
       "step1": "एक इमेज अपलोड करें या कैनवास पर ड्रैग और ड्रॉप करें।",
-      "step2": "अपना पसंदीदा बैकएंड (Gemini या Pixai) चुनें।",
+      "step2": "अपना पसंदीदा बैकएंड (Gemini या EVA) चुनें।",
       "step3": "टैग फ़िल्टर करने के लिए आत्मविश्वास थ्रेशोल्ड समायोजित करें।",
       "step4": "<strong>विश्लेषण शुरू करें</strong> पर क्लिक करें।",
       "step5": "टैग कॉपी करें, या अपने वर्कफ़्लो में उपयोग करने के लिए <strong>NAI रेडी</strong> PNG डाउनलोड करें।"

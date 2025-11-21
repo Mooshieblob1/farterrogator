@@ -77,10 +77,10 @@
     "advancedThresholds": "詳細な閾値",
     "backend": {
       "provider": "プロバイダー",
-      "pixai": "Pixai (Ollama + Tagger)",
+      "eva": "EVA (Ollama + Tagger)",
       "gemini": "Google Gemini",
       "keyStorage": "キーはメモリ内にのみ保存されます。",
-      "pixaiDescription": "ローカルTaggerの結果とOllamaの推論・キャプション機能をシームレスに組み合わせます。",
+      "evaDescription": "ローカルTaggerの結果とOllamaの推論・キャプション機能をシームレスに組み合わせます。",
       "ollamaEndpointLabel": "Ollama エンドポイント (LLM/Vision)",
       "ollamaModel": "Ollama モデル"
     },
@@ -95,8 +95,8 @@
   },
   "errors": {
     "geminiKeyRequired": "Gemini APIキーが必要です。設定パネルで設定してください。",
-    "ollamaRequired": "PixaiモードにはOllamaエンドポイントが必要です。",
-    "taggerRequired": "PixaiモードにはローカルTaggerエンドポイントが必要です。",
+    "ollamaRequired": "EVAモードにはOllamaエンドポイントが必要です。",
+    "taggerRequired": "EVAモードにはローカルTaggerエンドポイントが必要です。",
     "unknown": "不明なエラーが発生しました"
   },
   "info": {
@@ -105,7 +105,7 @@
     "features": {
       "dualModes": {
         "title": "デュアル分析モード",
-        "description": "クラウドベースの最先端分析を行う<strong>Google Gemini</strong>か、<strong>gpu.garden</strong>でホストされるWD1.4 TaggerとOllama (Vision Models)を組み合わせた<strong>Pixai</strong>を選択できます。"
+        "description": "クラウドベースの最先端分析を行う<strong>Google Gemini</strong>か、<strong>gpu.garden</strong>でホストされるWD1.4 TaggerとOllama (Vision Models)を組み合わせた<strong>EVA</strong>を選択できます。"
       },
       "naiReady": {
         "title": "NAI Ready 埋め込み",
@@ -113,7 +113,7 @@
       },
       "privacy": {
         "title": "プライバシーとセキュリティ",
-        "description": "Pixaiモードでは、画像は<strong>ファートコアデータセンター</strong>を経由して<strong>gpu.garden</strong>で安全に処理されます。デバイス上で実行されるわけではありませんが、データは厳格なプライバシー基準で扱われます。"
+        "description": "EVAモードでは、画像は<strong>ファートコアデータセンター</strong>を経由して<strong>gpu.garden</strong>で安全に処理されます。デバイス上で実行されるわけではありませんが、データは厳格なプライバシー基準で扱われます。"
       },
       "gpuGarden": {
         "title": "GPU Garden 統合",
@@ -123,7 +123,7 @@
     "howTo": {
       "title": "使い方",
       "step1": "画像をアップロードするか、キャンバスにドラッグ＆ドロップします。",
-      "step2": "好みのバックエンド (Gemini または Pixai) を選択します。",
+      "step2": "好みのバックエンド (Gemini または EVA) を選択します。",
       "step3": "タグをフィルタリングするために信頼度の閾値を調整します。",
       "step4": "<strong>尋問開始</strong>をクリックします。",
       "step5": "タグをコピーするか、ワークフローで使用するために<strong>NAI Ready</strong> PNGをダウンロードします。"

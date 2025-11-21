@@ -77,10 +77,10 @@
     "advancedThresholds": "高级阈值",
     "backend": {
       "provider": "提供商",
-      "pixai": "Pixai (Ollama + Tagger)",
+      "eva": "EVA (Ollama + Tagger)",
       "gemini": "Google Gemini",
       "keyStorage": "密钥仅存储在内存中。",
-      "pixaiDescription": "无缝结合本地 Tagger 结果与 Ollama 的推理和字幕能力。",
+      "evaDescription": "无缝结合本地 Tagger 结果与 Ollama 的推理和字幕能力。",
       "ollamaEndpointLabel": "Ollama 端点 (LLM/视觉)",
       "ollamaModel": "Ollama 模型"
     },
@@ -95,8 +95,8 @@
   },
   "errors": {
     "geminiKeyRequired": "需要 Gemini API 密钥。请在设置面板中配置。",
-    "ollamaRequired": "Pixai 模式需要 Ollama 端点。",
-    "taggerRequired": "Pixai 模式需要本地 Tagger 端点。",
+    "ollamaRequired": "EVA 模式需要 Ollama 端点。",
+    "taggerRequired": "EVA 模式需要本地 Tagger 端点。",
     "unknown": "发生未知错误"
   },
   "info": {
@@ -105,7 +105,7 @@
     "features": {
       "dualModes": {
         "title": "双重分析模式",
-        "description": "选择 <strong>Google Gemini</strong> 进行基于云的最先进分析，或选择 <strong>Pixai</strong>，结合 WD1.4 Tagger 与托管在 <strong>gpu.garden</strong> 上的 Ollama（视觉模型）。"
+        "description": "选择 <strong>Google Gemini</strong> 进行基于云的最先进分析，或选择 <strong>EVA</strong>，结合 WD1.4 Tagger 与托管在 <strong>gpu.garden</strong> 上的 Ollama（视觉模型）。"
       },
       "naiReady": {
         "title": "NAI 就绪嵌入",
@@ -113,7 +113,7 @@
       },
       "privacy": {
         "title": "隐私与安全",
-        "description": "在 Pixai 模式下，您的图像通过 <strong>Fartcore 数据中心</strong> 在 <strong>gpu.garden</strong> 上安全处理。虽然不在您的设备上运行，但您的数据将按照严格的隐私标准进行处理。"
+        "description": "在 EVA 模式下，您的图像通过 <strong>Fartcore 数据中心</strong> 在 <strong>gpu.garden</strong> 上安全处理。虽然不在您的设备上运行，但您的数据将按照严格的隐私标准进行处理。"
       },
       "gpuGarden": {
         "title": "GPU Garden 集成",
@@ -123,7 +123,7 @@
     "howTo": {
       "title": "如何使用",
       "step1": "上传图片或将其拖放到画布上。",
-      "step2": "选择您偏好的后端（Gemini 或 Pixai）。",
+      "step2": "选择您偏好的后端（Gemini 或 EVA）。",
       "step3": "调整置信度阈值以过滤标签。",
       "step4": "点击<strong>开始反推</strong>。",
       "step5": "复制标签或下载 <strong>NAI 就绪</strong> PNG 以在您的工作流程中使用。"

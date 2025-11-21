@@ -23,7 +23,7 @@ export const loadTagDatabase = async (): Promise<void> => {
     if (isLoaded) return;
 
     try {
-        const response = await fetch('/tags.csv');
+        const response = await fetch('/danbooru_tags.csv');
         if (!response.ok) {
             throw new Error(`Failed to load tag database: ${response.statusText}`);
         }

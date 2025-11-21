@@ -171,20 +171,6 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig,
   const formData = new FormData();
   formData.append('file', blob, 'image.png');
 
-  // Add new parameters from settings
-  if (settings) {
-    if (settings.maxTags && settings.maxTags > 0) {
-      formData.append('max_tags', settings.maxTags.toString());
-    }
-    if (settings.triggerPhrase && settings.triggerPhrase.trim() !== '') {
-      formData.append('trigger_phrase', settings.triggerPhrase);
-    }
-    // Optional: Pass threshold if available in settings (using general as default)
-    if (settings.thresholds && settings.thresholds.general) {
-      formData.append('threshold', settings.thresholds.general.toString());
-    }
-  }
-
   // Automatic Proxy Handling for known CORS-restricted endpoints (DEV ONLY)
   let endpoint = config.taggerEndpoint;
 
@@ -219,10 +205,39 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig,
     console.log(`[Proxy] Rewrote ${config.taggerEndpoint} to ${endpoint}`);
   }
 
+  // Handle localhost:8000 proxy (Fix for CORS on local dev)
+  if (isLocalhost && endpoint.includes('localhost:8000')) {
+    endpoint = endpoint.replace('http://localhost:8000', '');
+    if (!endpoint.startsWith('/')) {
+      endpoint = '/' + endpoint;
+    }
+    console.log(`[Proxy] Rewrote localhost:8000 to ${endpoint}`);
+  }
+
+  // Construct Query Parameters based on backend requirements
+  const queryParams = new URLSearchParams();
+
+  if (settings) {
+    if (settings.maxTags && settings.maxTags > 0) {
+      queryParams.append('max_tags', Math.floor(settings.maxTags).toString());
+    }
+    if (settings.triggerPhrase && settings.triggerPhrase.trim() !== '') {
+      queryParams.append('trigger_word', settings.triggerPhrase);
+    }
+    if (settings.thresholds && settings.thresholds.general) {
+      queryParams.append('threshold', settings.thresholds.general.toString());
+    }
+  } else {
+    queryParams.append('threshold', '0.35');
+  }
+
+  const queryString = queryParams.toString();
+  const finalUrl = `${endpoint}${endpoint.includes('?') ? '&' : '?'}${queryString}`;
+
   try {
-    // User verified curl command: curl -X POST -F "file=@..." http://localhost:8000/interrogate/pixai
+    // User verified curl command: curl -X POST -F "file=@..." http://localhost:8000/interrogate/eva
     // We stick to this exactly, removing hardcoded threshold and model params that might cause issues.
-    const response = await fetch(endpoint, {
+    const response = await fetch(finalUrl, {
       method: 'POST',
       body: formData,
     });
@@ -234,13 +249,22 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig,
     const data = await response.json();
     // Expected format: { tags: { "1girl": 0.99, ... }, tag_string: "..." }
     // OR Array format: { tags: [["1girl", 0.99], ...] } or { tags: [{name: "1girl", score: 0.99}, ...] }
+    // OR Array of Objects (Backend Update): [{ tags: {...}, tag_string: "..." }]
 
     const tags: Tag[] = [];
+    let tagsData = data.tags;
 
-    if (data.tags) {
-      if (Array.isArray(data.tags)) {
+    // Handle Array of Objects response (take first item)
+    if (Array.isArray(data) && data.length > 0 && data[0].tags) {
+      tagsData = data[0].tags;
+    } else if (data.tags) {
+      tagsData = data.tags;
+    }
+
+    if (tagsData) {
+      if (Array.isArray(tagsData)) {
         // Handle Array format
-        data.tags.forEach((item: any) => {
+        tagsData.forEach((item: any) => {
           let name = '';
           let score = 0;
 
@@ -265,9 +289,9 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig,
             });
           }
         });
-      } else if (typeof data.tags === 'object') {
+      } else if (typeof tagsData === 'object') {
         // Handle Object format
-        Object.entries(data.tags).forEach(([name, score]) => {
+        Object.entries(tagsData).forEach(([name, score]) => {
           let normalizedScore = Number(score);
           if (normalizedScore > 1.0) {
             normalizedScore = normalizedScore / 100;
@@ -323,24 +347,8 @@ export const fetchBatchTags = async (
 
   const formData = new FormData();
   files.forEach(file => {
-    formData.append('files', file);
+    formData.append('file', file);
   });
-
-  if (settings) {
-    // Ensure max_tags is sent as an integer
-    if (settings.maxTags && settings.maxTags > 0) {
-      formData.append('max_tags', Math.floor(settings.maxTags).toString());
-    }
-    if (settings.triggerPhrase && settings.triggerPhrase.trim() !== '') {
-      formData.append('trigger_phrase', settings.triggerPhrase);
-    }
-    if (settings.thresholds && settings.thresholds.general) {
-      formData.append('threshold', settings.thresholds.general.toString());
-    }
-  } else {
-    // Default threshold if no settings provided
-    formData.append('threshold', '0.35');
-  }
 
   let endpoint = config.taggerEndpoint;
 
@@ -359,7 +367,7 @@ export const fetchBatchTags = async (
   endpoint = endpoint.replace(/\/batch$/, '').replace(/\/interrogate$/, '');
 
   // Append the correct full path
-  endpoint = `${endpoint}/interrogate/batch`;
+  endpoint = `${endpoint}/interrogate`;
 
   // Force HTTPS for remote endpoints
   if (endpoint.includes('gpu.garden') && endpoint.startsWith('http:')) {
@@ -381,8 +389,40 @@ export const fetchBatchTags = async (
     console.log(`[Proxy] Rewrote batch endpoint to ${endpoint}`);
   }
 
+  // Handle localhost:8000 proxy (Fix for CORS on local dev)
+  if (isLocalhost && endpoint.includes('localhost:8000')) {
+    endpoint = endpoint.replace('http://localhost:8000', '');
+    if (!endpoint.startsWith('/')) {
+      endpoint = '/' + endpoint;
+    }
+    console.log(`[Proxy] Rewrote localhost:8000 batch endpoint to ${endpoint}`);
+  }
+
+  // Construct Query Parameters based on backend requirements
+  const queryParams = new URLSearchParams();
+
+  // Always force zip output for batch processing
+  queryParams.append('output_format', 'zip');
+
+  if (settings) {
+    if (settings.triggerPhrase && settings.triggerPhrase.trim() !== '') {
+      queryParams.append('trigger_word', settings.triggerPhrase);
+    }
+    if (settings.randomize) {
+      queryParams.append('random_order', 'true');
+    }
+    if (settings.thresholds && settings.thresholds.general) {
+      queryParams.append('threshold', settings.thresholds.general.toString());
+    }
+  } else {
+    queryParams.append('threshold', '0.35');
+  }
+
+  const queryString = queryParams.toString();
+  const finalUrl = `${endpoint}${endpoint.includes('?') ? '&' : '?'}${queryString}`;
+
   try {
-    const response = await fetch(endpoint, {
+    const response = await fetch(finalUrl, {
       method: 'POST',
       body: formData,
     });
@@ -391,10 +431,83 @@ export const fetchBatchTags = async (
       throw new Error(`Batch Tagger Error: ${response.status} ${response.statusText}`);
     }
 
+    const contentType = response.headers.get('content-type');
+    if (contentType && (contentType.includes('application/zip') || contentType.includes('application/octet-stream'))) {
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      
+      // Try to get filename from Content-Disposition
+      const contentDisposition = response.headers.get('content-disposition');
+      let filename = 'batch_tags.zip';
+      if (contentDisposition) {
+        const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+        if (filenameMatch && filenameMatch[1]) {
+          filename = filenameMatch[1];
+        }
+      }
+      
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      
+      // Return empty object as we handled the download
+      return {};
+    }
+
     const data = await response.json();
 
     // Post-process batch results to enforce maxTags and normalize scores
     // This handles cases where the server ignores max_tags or returns 0-100 scores
+    
+    // Handle Array of Objects response (Backend Update)
+    // [{ tags: {...}, tag_string: "..." }, ...]
+    // We need to map this back to filenames. Assuming order is preserved.
+    if (Array.isArray(data)) {
+      const batchResult: Record<string, BatchResult> = {};
+      
+      data.forEach((item, index) => {
+        // Get filename from files array if available
+        const filename = files[index] ? files[index].name : `image_${index}.png`;
+        
+        if (item && item.tags) {
+           // Convert to array for sorting and normalization
+           let tagEntries = Object.entries(item.tags).map(([tag, score]) => {
+            let numScore = Number(score);
+            // Normalize score if > 1.0 (assuming percentage)
+            if (numScore > 1.0) numScore /= 100;
+            return { tag, score: numScore };
+          });
+
+          // Sort by score descending
+          tagEntries.sort((a, b) => b.score - a.score);
+
+          // Enforce maxTags if set
+          if (settings?.maxTags && settings.maxTags > 0) {
+            tagEntries = tagEntries.slice(0, settings.maxTags);
+          }
+
+          // Reconstruct tags object
+          const newTags: Record<string, number> = {};
+          tagEntries.forEach(t => newTags[t.tag] = t.score);
+          
+          // Reconstruct tag_string
+          const tagString = tagEntries.map(t => t.tag).join(', ');
+
+          batchResult[filename] = {
+            tags: newTags,
+            tag_string: tagString
+          };
+        }
+      });
+      
+      return batchResult;
+    }
+
+    // Fallback for Object format { "filename": { tags: ... } }
     if (data && typeof data === 'object') {
       Object.keys(data).forEach(filename => {
         const result = data[filename];

@@ -75,10 +75,10 @@
     "advancedThresholds": "Umbrales Avanzados",
     "backend": {
       "provider": "Proveedor",
-      "pixai": "Pixai (Ollama + Tagger)",
+      "eva": "EVA (Ollama + Tagger)",
       "gemini": "Google Gemini",
       "keyStorage": "La clave se almacena solo en memoria.",
-      "pixaiDescription": "Combina perfectamente los resultados del tagger local con las capacidades de razonamiento y subtitulado de Ollama.",
+      "evaDescription": "Combina perfectamente los resultados del tagger local con las capacidades de razonamiento y subtitulado de Ollama.",
       "ollamaEndpointLabel": "Endpoint de Ollama (LLM/Visión)",
       "ollamaModel": "Modelo de Ollama"
     },
@@ -95,8 +95,8 @@
   },
   "errors": {
     "geminiKeyRequired": "Se requiere la clave API de Gemini. Por favor configúrala en el panel de configuración.",
-    "ollamaRequired": "Se requiere el Endpoint de Ollama para el modo Pixai.",
-    "taggerRequired": "Se requiere el Endpoint del Tagger Local para el modo Pixai.",
+    "ollamaRequired": "Se requiere el Endpoint de Ollama para el modo EVA.",
+    "taggerRequired": "Se requiere el Endpoint del Tagger Local para el modo EVA.",
     "unknown": "Ocurrió un error desconocido"
   },
   "info": {
@@ -105,7 +105,7 @@
     "features": {
       "dualModes": {
         "title": "Modos de Análisis Dual",
-        "description": "Elige entre <strong>Google Gemini</strong> para análisis de vanguardia basado en la nube, o <strong>Pixai</strong> que combina un Tagger WD1.4 con Ollama (Modelos de Visión) alojado en <strong>gpu.garden</strong>."
+        "description": "Elige entre <strong>Google Gemini</strong> para análisis de vanguardia basado en la nube, o <strong>EVA</strong> que combina un Tagger WD1.4 con Ollama (Modelos de Visión) alojado en <strong>gpu.garden</strong>."
       },
       "naiReady": {
         "title": "Incrustación Lista para NAI",
@@ -113,7 +113,7 @@
       },
       "privacy": {
         "title": "Privacidad y Seguridad",
-        "description": "En modo Pixai, tus imágenes se procesan de forma segura en <strong>gpu.garden</strong> a través del <strong>centro de datos Fartcore</strong>. Aunque no se ejecutan en tu dispositivo, tus datos se manejan con estrictos estándares de privacidad."
+        "description": "En modo EVA, tus imágenes se procesan de forma segura en <strong>gpu.garden</strong> a través del <strong>centro de datos Fartcore</strong>. Aunque no se ejecutan en tu dispositivo, tus datos se manejan con estrictos estándares de privacidad."
       },
       "gpuGarden": {
         "title": "Integración con GPU Garden",
@@ -123,7 +123,7 @@
     "howTo": {
       "title": "Cómo usar",
       "step1": "Sube una imagen o arrastra y suelta una en el lienzo.",
-      "step2": "Selecciona tu backend preferido (Gemini o Pixai).",
+      "step2": "Selecciona tu backend preferido (Gemini o EVA).",
       "step3": "Ajusta los umbrales de confianza para filtrar etiquetas.",
       "step4": "Haz clic en <strong>Iniciar Interrogación</strong>.",
       "step5": "Copia las etiquetas o descarga un PNG <strong>Listo para NAI</strong> para usar en tu flujo de trabajo."
