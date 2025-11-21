@@ -253,6 +253,11 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig,
           }
 
           if (name) {
+            // Normalize score if it's > 1 (assuming percentage 0-100)
+            if (score > 1.0) {
+              score = score / 100;
+            }
+
             tags.push({
               name,
               score,
@@ -263,9 +268,14 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig,
       } else if (typeof data.tags === 'object') {
         // Handle Object format
         Object.entries(data.tags).forEach(([name, score]) => {
+          let normalizedScore = Number(score);
+          if (normalizedScore > 1.0) {
+            normalizedScore = normalizedScore / 100;
+          }
+
           tags.push({
             name,
-            score: Number(score),
+            score: normalizedScore,
             category: getCategory(name)
           });
         });
@@ -282,7 +292,14 @@ export const fetchLocalTags = async (base64Image: string, config: BackendConfig,
     });
 
     // Sort by score descending
-    return filteredTags.sort((a, b) => b.score - a.score);
+    const sortedTags = filteredTags.sort((a, b) => b.score - a.score);
+
+    // Client-side fallback: Enforce maxTags if provided
+    if (settings?.maxTags && settings.maxTags > 0) {
+      return sortedTags.slice(0, settings.maxTags);
+    }
+
+    return sortedTags;
   } catch (error: any) {
     console.error("Fetch Local Tags Error:", error);
 
@@ -310,8 +327,9 @@ export const fetchBatchTags = async (
   });
 
   if (settings) {
+    // Ensure max_tags is sent as an integer
     if (settings.maxTags && settings.maxTags > 0) {
-      formData.append('max_tags', settings.maxTags.toString());
+      formData.append('max_tags', Math.floor(settings.maxTags).toString());
     }
     if (settings.triggerPhrase && settings.triggerPhrase.trim() !== '') {
       formData.append('trigger_phrase', settings.triggerPhrase);
@@ -319,6 +337,9 @@ export const fetchBatchTags = async (
     if (settings.thresholds && settings.thresholds.general) {
       formData.append('threshold', settings.thresholds.general.toString());
     }
+  } else {
+    // Default threshold if no settings provided
+    formData.append('threshold', '0.35');
   }
 
   let endpoint = config.taggerEndpoint;
@@ -370,7 +391,43 @@ export const fetchBatchTags = async (
       throw new Error(`Batch Tagger Error: ${response.status} ${response.statusText}`);
     }
 
-    return await response.json();
+    const data = await response.json();
+
+    // Post-process batch results to enforce maxTags and normalize scores
+    // This handles cases where the server ignores max_tags or returns 0-100 scores
+    if (data && typeof data === 'object') {
+      Object.keys(data).forEach(filename => {
+        const result = data[filename];
+        if (result && result.tags) {
+          // Convert to array for sorting and normalization
+          let tagEntries = Object.entries(result.tags).map(([tag, score]) => {
+            let numScore = Number(score);
+            // Normalize score if > 1.0 (assuming percentage)
+            if (numScore > 1.0) numScore /= 100;
+            return { tag, score: numScore };
+          });
+
+          // Sort by score descending
+          tagEntries.sort((a, b) => b.score - a.score);
+
+          // Enforce maxTags if set
+          if (settings?.maxTags && settings.maxTags > 0) {
+            tagEntries = tagEntries.slice(0, settings.maxTags);
+          }
+
+          // Reconstruct tags object
+          const newTags: Record<string, number> = {};
+          tagEntries.forEach(t => newTags[t.tag] = t.score);
+          result.tags = newTags;
+
+          // Reconstruct tag_string
+          // We keep underscores to maintain standard Danbooru format
+          result.tag_string = tagEntries.map(t => t.tag).join(', ');
+        }
+      });
+    }
+
+    return data;
   } catch (error: any) {
     console.error("Fetch Batch Tags Error:", error);
     if (config.taggerEndpoint.startsWith('http') && !config.taggerEndpoint.includes('localhost') && error.message === 'Failed to fetch') {
