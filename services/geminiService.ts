@@ -323,17 +323,22 @@ export const fetchBatchTags = async (
 
   let endpoint = config.taggerEndpoint;
 
-  // Normalize endpoint to point to /interrogate/batch
-  // If the user provided endpoint ends with /interrogate, append /batch
-  if (endpoint.endsWith('/interrogate')) {
-    endpoint = endpoint + '/batch';
-  } else {
-    // If it doesn't end with /interrogate, assume it's the base URL and append /interrogate/batch
-    if (endpoint.endsWith('/')) {
-      endpoint = endpoint.substring(0, endpoint.length - 1);
-    }
-    endpoint = endpoint + '/interrogate/batch';
+  // Robust normalization: Strip existing suffixes to get base URL, then append correct path
+  // This handles inputs like:
+  // - https://domain.com
+  // - https://domain.com/interrogate
+  // - https://domain.com/interrogate/batch
+  
+  // Remove trailing slash
+  if (endpoint.endsWith('/')) {
+    endpoint = endpoint.slice(0, -1);
   }
+
+  // Strip /batch and /interrogate from the end if present
+  endpoint = endpoint.replace(/\/batch$/, '').replace(/\/interrogate$/, '');
+
+  // Append the correct full path
+  endpoint = `${endpoint}/interrogate/batch`;
 
   // Force HTTPS for remote endpoints
   if (endpoint.includes('gpu.garden') && endpoint.startsWith('http:')) {
